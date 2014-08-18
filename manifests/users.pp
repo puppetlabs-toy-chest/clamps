@@ -1,6 +1,6 @@
 define clamps::users (
   $user = $title,
-  $servername = ${::servername},
+  $servername = $servername,
 ) {
 
   $cron_1 = fqdn_rand('20',$user)
