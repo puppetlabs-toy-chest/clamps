@@ -1,0 +1,60 @@
+entrally managed by Puppet version 3.6.2 (Puppet Enterprise 3.3.0)
+main_collective = mcollective
+collectives     = mcollective
+libdir          = /opt/puppet/libexec/mcollective/
+logfile         = /home/<%= @user %>/.mcollective/log/mcollective.log
+loglevel        = info
+ 
+# Log plugin configuration
+plugin.rpcaudit.logfile = /home/<%= @user %>/.mcollective/log/mcollective-audit.log
+rpcaudit = 1
+rpcauditprovider = Logfile
+ 
+daemonize       = 1
+ 
+identity = centos65a-nonroot
+# Plugins
+securityprovider           = ssl
+plugin.ssl_server_private = /home/<%= @user %>/.mcollective/ssl/mcollective-private.pem
+plugin.ssl_server_public = /home/<%= @user %>/.mcollective/mcollective-public.pem
+plugin.ssl_client_cert_dir = /home/<%= @user %>/.mcollective/ssl/clients/
+plugin.ssl_serializer     = yaml
+ 
+connector = activemq
+plugin.activemq.pool.size = 1
+plugin.activemq.pool.1.host = master
+plugin.activemq.pool.1.port = 61613
+plugin.activemq.pool.1.user = mcollective
+plugin.activemq.pool.1.password = sDSPDM2VlJIEVGVqB0iU
+plugin.activemq.pool.1.ssl = true
+plugin.activemq.pool.1.ssl.ca = /home/<%= @user %>/.mcollective/ssl/mcollective-cacert.pem
+plugin.activemq.pool.1.ssl.key = /home/<%= @user %>/.mcollective/ssl/mcollective-private.pem
+plugin.activemq.pool.1.ssl.cert = /home/<%= @user %>/.mcollective/ssl/mcollective-cert.pem
+ 
+# Facts
+factsource = yaml
+plugin.yaml = /etc/puppetlabs/mcollective/facts.yaml
+ 
+# Puppet Classes
+classesfile = /var/opt/lib/pe-puppet/classes.txt
+ 
+# Puppet Agent plugin configuration
+plugin.puppet.command = /opt/puppet/bin/puppet agent
+plugin.puppet.config  = /home/<%= @user %>/.puppet/puppet.conf
+ 
+plugin.puppet.splay = true
+plugin.puppet.splaylimit = 120
+ 
+# Periodcally broadcast metdata for registration purposes.
+# This registration plugin will broadcast current Facter fact values.
+registration = Meta
+# registerinterval is intentionally "long" to prevent systems from being overly
+# chatty on the message bus by default.  If you want a higher frequency, this
+# may be set to 300 (5 minutes)
+registerinterval = 600
+ 
+# authorization
+rpcauthorization = 1
+rpcauthprovider = action_policy
+plugin.actionpolicy.allow_unconfigured = 1
+direct_addressing = 1
