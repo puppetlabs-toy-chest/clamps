@@ -7,6 +7,7 @@ class clamps (
     include pe_mcollective
     #include ntp
     clamps::users { $nonroot_users: }
+    clamps::mcollective { $nonroot_users: }
   }
 
 }
