@@ -45,23 +45,37 @@ define clamps::mcollective (
     require => File["/home/$user/.mcollective/ssl/"],
     before  => File["/home/$user/.mcollective/server.cfg"],
   }
-
-  file { "/home/$user/.mcollective/server.cfg":
-    ensure   => file,
-    contents => template('clamps/server.cfg.erb'),
+  file { "/home/$user/.mcollective/ssl/clients/puppet-dashboard-public.pem":
+    ensure  => file,
+    source  => 'file:///etc/puppetlabs/mcollective/ssl/clients/puppet-dashboard-public.pem',
+    require => File["/home/$user/.mcollective/ssl/clients/"],
+    before  => File["/home/$user/.mcollective/server.cfg"],
   }
 
-  file { "/etc/init.d/pe-mcollecitve-$user":
+  file { "/home/$user/.mcollective/ssl/clients/peadmin-public.pem":
+    ensure  => file,
+    source  => 'file:///etc/puppetlabs/mcollective/ssl/clients/peadmin-public.pem',
+    require => File["/home/$user/.mcollective/ssl/clients/"],
+    before  => File["/home/$user/.mcollective/server.cfg"],
+  }
+  file { "/home/$user/.mcollective/server.cfg":
+    ensure   => file,
+    content  => template('clamps/server.cfg.erb'),
+  }
+
+  file { "/etc/init.d/pe-mcollective-$user":
     ensure   => file,
     owner    => root,
     group    => root,
-    mode     => '0644'
-    contents => template('clamps/pe-mcollective.erb'),
+    mode     => '0755',
+    content  => template('clamps/pe-mcollective.erb'),
   }
 
   service { "pe-mcollective-$user":
     ensure    => running,
-    enable    => true,
+    start     => "su $user -c \'/opt/puppet/sbin/mcollectived --pid /home/$user/.mcollective/pe-mcollective.pid --config=/home/$user/.mcollective/server.cfg &\'",
+    status    => "pgrep -u $user mcollectived",
+    stop      => "kill -9 `pgrep -u $user mcollectived`",
     subscribe => [
       File["/home/$user/.mcollective/server.cfg"],
       File["/etc/init.d/pe-mcollective-$user"]
