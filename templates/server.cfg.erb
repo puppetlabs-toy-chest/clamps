@@ -22,7 +22,7 @@ plugin.ssl_serializer     = yaml
  
 connector = activemq
 plugin.activemq.pool.size = 1
-plugin.activemq.pool.1.host = <%= scope['::server'] %>
+plugin.activemq.pool.1.host = <%= @amqserver %>
 plugin.activemq.pool.1.port = 61613
 plugin.activemq.pool.1.user = mcollective
 plugin.activemq.pool.1.password = <%= @amqpass %>

@@ -2,6 +2,7 @@ class clamps (
   $runinterval = '10m',
   $nonroot_users = ['user1','user2','user3','user4'],
   $master = $::server,
+  $amqserver = 'servername',
   $amqpass = 'password',
 ) {
 
@@ -12,7 +13,8 @@ class clamps (
       servername => $master,
     }
     clamps::mcollective { $nonroot_users: 
-      amqpass => $amqpass,
+      amqserver => $amqserver,
+      amqpass   => $amqpass,
     }
   }
 

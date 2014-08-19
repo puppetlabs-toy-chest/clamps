@@ -1,6 +1,7 @@
 define clamps::mcollective (
   $user = $title,
   $amqpass = 'password',
+  $amqserver = '$::server',
 ) {
 
   # Directories to create / files to copy
