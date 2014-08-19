@@ -69,10 +69,7 @@ define clamps::mcollective (
     start     => "su $user -c \'/opt/puppet/sbin/mcollectived --pid /home/$user/.mcollective/pe-mcollective.pid --config=/home/$user/.mcollective/server.cfg &\'",
     status    => "pgrep -u $user mcollectived",
     stop      => "kill -9 `pgrep -u $user mcollectived`",
-    subscribe => [
-      File["/home/$user/.mcollective/server.cfg"],
-      File["/etc/init.d/pe-mcollective-$user"]
-    ],
+    subscribe => File["/home/$user/.mcollective/server.cfg"],
   }
 
 }
