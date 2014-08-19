@@ -8,8 +8,6 @@ class clamps (
 
   $nonroot_usernames = clamps_users($nonroot_users)
   
-  include "clamps::logic::c_00${logic}"
-
   if $id == 'root' {
     include pe_mcollective
     #include ntp
@@ -20,6 +18,9 @@ class clamps (
       amqserver => $master,
       amqpass   => $amqpass,
     }
+  }
+  else {
+    include "clamps::logic::c_00${logic}"
   }
 
 }
