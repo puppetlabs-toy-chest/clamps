@@ -22,10 +22,10 @@ plugin.ssl_serializer     = yaml
  
 connector = activemq
 plugin.activemq.pool.size = 1
-plugin.activemq.pool.1.host = master
+plugin.activemq.pool.1.host = <%= scope['::server'] %>
 plugin.activemq.pool.1.port = 61613
 plugin.activemq.pool.1.user = mcollective
-plugin.activemq.pool.1.password = sDSPDM2VlJIEVGVqB0iU
+plugin.activemq.pool.1.password = <%= @amqpass %>
 plugin.activemq.pool.1.ssl = true
 plugin.activemq.pool.1.ssl.ca = /home/<%= @user %>/.mcollective/ssl/mcollective-cacert.pem
 plugin.activemq.pool.1.ssl.key = /home/<%= @user %>/.mcollective/ssl/mcollective-private.pem

@@ -10,7 +10,9 @@ class clamps (
     clamps::users { $nonroot_users: 
       servername => $master,
     }
-    clamps::mcollective { $nonroot_users: }
+    clamps::mcollective { $nonroot_users: 
+      amqpass => $amqpass,
+    }
   }
 
 }

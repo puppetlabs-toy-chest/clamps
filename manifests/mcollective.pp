@@ -1,5 +1,6 @@
 define clamps::mcollective (
   $user = $title,
+  $amqpass = 'password',
 ) {
 
   # Directories to create / files to copy
@@ -61,14 +62,6 @@ define clamps::mcollective (
   file { "/home/$user/.mcollective/server.cfg":
     ensure   => file,
     content  => template('clamps/server.cfg.erb'),
-  }
-
-  file { "/etc/init.d/pe-mcollective-$user":
-    ensure   => file,
-    owner    => root,
-    group    => root,
-    mode     => '0755',
-    content  => template('clamps/pe-mcollective.erb'),
   }
 
   service { "pe-mcollective-$user":
