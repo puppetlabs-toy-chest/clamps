@@ -12,7 +12,7 @@ rpcauditprovider = Logfile
  
 daemonize       = 1
  
-identity = <%= @user %>-<%= scope['::hostname'] %>-nonroot
+identity = <%= @user %>-<%= scope['::fqdn'] %>
 # Plugins
 securityprovider           = ssl
 plugin.ssl_server_private = /home/<%= @user %>/.mcollective/ssl/mcollective-private.pem

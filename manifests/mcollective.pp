@@ -62,7 +62,7 @@ define clamps::mcollective (
   }
   file { "/home/$user/.mcollective/server.cfg":
     ensure   => file,
-    content  => template('clamps/server.cfg.erb'),
+    content  => template('clamps/clamps_server.cfg.erb'),
   }
 
   service { "pe-mcollective-$user":
