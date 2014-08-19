@@ -3,7 +3,7 @@
 require 'securerandom'
 require 'facter'
 
-$num_of_facts = rand(5..50)
+$num_of_facts = rand(5..75)
 
 hash_of_facts = Hash.new {|h,k| h[k] = [] }
 

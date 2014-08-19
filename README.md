@@ -18,4 +18,6 @@ for the non root accounts:
 
 The clamps module itself uses the $id fact to know if it should create users ($id=root) or not. It only applies the logic module to the nonroot users, since creating nonroot users already creates around 10-20 resources per user.
 
+This also uses the lots\_of\_facts fact, which generates a random amount of facts between 5 and 75 to compensate for the lack of facts gathered because non root doesn't appear to be able to retrieve as many facts. They change every puppet run also - so its hitting puppetdb more also.
+
 In testing, a m3.xlarge can run about 100 users with responsive mcollective and puppet runs.

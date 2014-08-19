@@ -3,9 +3,8 @@ define clamps::users (
   $servername = $servername,
 ) {
 
-  $cron_1 = fqdn_rand('20',$user)
-  $cron_2 = fqdn_rand('20',$user) + 20
-  $cron_3 = fqdn_rand('20',$user) + 40
+  $cron_1 = fqdn_rand('30',$user)
+  $cron_2 = fqdn_rand('30',$user) + 30
 
   user { $user:
     ensure     => present,
