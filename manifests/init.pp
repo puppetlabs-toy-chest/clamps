@@ -1,14 +1,14 @@
 class clamps (
   $runinterval = '10m',
   $nonroot_users = '2',
-  $master = $::server,
+  $master = $::servername,
   $amqpass = 'password',
   $logic = '1',
 ) {
 
   $nonroot_usernames = clamps_users($nonroot_users)
   
-  if $id == 'root' {
+  if $id == 'root' and $::fqdn != $::servername {
     include pe_mcollective
     #include ntp
     clamps::users { $nonroot_usernames: 
