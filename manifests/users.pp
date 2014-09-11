@@ -32,7 +32,7 @@ define clamps::users (
   }
 
   cron { "cron.puppet.${user}":
-    command => '/opt/puppet/bin/puppet --onetime --no-daemonize',
+    command => '/opt/puppet/bin/puppet agent --onetime --no-daemonize',
     user    => "${user}",
     minute  => [ $cron_1, $cron_2 ],
     require => File["/home/${user}/.puppet"],
