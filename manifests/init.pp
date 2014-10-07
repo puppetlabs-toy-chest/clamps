@@ -1,29 +1,5 @@
 class clamps (
-  $nonroot_users = '2',
-  $master = $::servername,
-  $amqpass = 'password',
   $logic = '1',
 ) {
-
-  $nonroot_usernames = clamps_users($nonroot_users)
-  
-  if $id == 'root' and $::fqdn == $::servername {
-    include clamps::master
-    include ntp
-  }
-  if $id == 'root' and $::fqdn != $::servername {
-    include pe_mcollective
-    #include ntp
-    clamps::users { $nonroot_usernames: 
-      servername => $master,
-    }
-    clamps::mcollective { $nonroot_usernames: 
-      amqserver => $master,
-      amqpass   => $amqpass,
-    }
-  }
-  else {
-    include "clamps::logic::c_00${logic}"
-  }
-
+  include "clamps::logic::c_00${logic}"
 }

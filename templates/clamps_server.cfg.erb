@@ -1,60 +1,77 @@
-entrally managed by Puppet version 3.6.2 (Puppet Enterprise 3.3.0)
-main_collective = mcollective
-collectives     = mcollective
-libdir          = /opt/puppet/libexec/mcollective/
-logfile         = /home/<%= @user %>/.mcollective/log/mcollective.log
-loglevel        = info
- 
-# Log plugin configuration
-plugin.rpcaudit.logfile = /home/<%= @user %>/.mcollective/log/mcollective-audit.log
-rpcaudit = 1
-rpcauditprovider = Logfile
- 
-daemonize       = 1
- 
-identity = <%= @user %>-<%= scope['::fqdn'] %>
-# Plugins
-securityprovider           = ssl
-plugin.ssl_server_private = /home/<%= @user %>/.mcollective/ssl/mcollective-private.pem
-plugin.ssl_server_public = /home/<%= @user %>/.mcollective/mcollective-public.pem
-plugin.ssl_client_cert_dir = /home/<%= @user %>/.mcollective/ssl/clients/
-plugin.ssl_serializer     = yaml
- 
+
+# Centrally managed by Puppet version 3.7.1 (Puppet Enterprise 3.4.0-rc1-1223-g488a64a)
+# https://docs.puppetlabs.com/mcollective/configure/server.html
+
+# Connector settings (required):
+# -----------------------------
 connector = activemq
+direct_addressing = 1
+
+# ActiveMQ connector settings:
 plugin.activemq.pool.size = 1
 plugin.activemq.pool.1.host = <%= @amqserver %>
 plugin.activemq.pool.1.port = 61613
 plugin.activemq.pool.1.user = mcollective
-plugin.activemq.pool.1.password = <%= @amqpass %>
+plugin.activemq.pool.1.password = <%= @amqpass %> 
 plugin.activemq.pool.1.ssl = true
-plugin.activemq.pool.1.ssl.ca = /home/<%= @user %>/.mcollective/ssl/mcollective-cacert.pem
-plugin.activemq.pool.1.ssl.key = /home/<%= @user %>/.mcollective/ssl/mcollective-private.pem
-plugin.activemq.pool.1.ssl.cert = /home/<%= @user %>/.mcollective/ssl/mcollective-cert.pem
- 
-# Facts
+plugin.activemq.pool.1.ssl.ca = /home/<%= @user %>/.mcollective/ssl/ca.cert.pem
+plugin.activemq.pool.1.ssl.cert = /home/<%= @user %>/.mcollective/ssl/amq.cert.pem
+plugin.activemq.pool.1.ssl.key = /home/<%= @user %>/.mcollective/ssl/amq.private_key.pem
+
+# Security plugin settings (required):
+# -----------------------------------
+securityprovider           = ssl
+
+# SSL plugin settings:
+plugin.ssl_server_private  = /home/<%= @user %>/.mcollective/ssl/pe-internal-mcollective-servers.private_key.pem
+plugin.ssl_server_public   = /home/<%= @user %>/.mcollective/ssl/pe-internal-mcollective-servers.public_key.pem
+plugin.ssl_client_cert_dir = /home/<%= @user %>/.mcollective/ssl/clients
+plugin.ssl_serializer      = yaml
+
+# Facts, identity, and classes (recommended):
+# ------------------------------------------
 factsource = yaml
 plugin.yaml = /etc/puppetlabs/mcollective/facts.yaml
- 
-# Puppet Classes
+
+identity = <%= @user %>-<%= scope['::fqdn'] %>
+
 classesfile = /var/opt/lib/pe-puppet/classes.txt
- 
-# Puppet Agent plugin configuration
-plugin.puppet.command = /opt/puppet/bin/puppet agent
-plugin.puppet.config  = /home/<%= @user %>/.puppet/puppet.conf
- 
-plugin.puppet.splay = true
-plugin.puppet.splaylimit = 120
- 
-# Periodcally broadcast metdata for registration purposes.
-# This registration plugin will broadcast current Facter fact values.
+
+# Registration (recommended):
+# -----------------------
 registration = Meta
-# registerinterval is intentionally "long" to prevent systems from being overly
-# chatty on the message bus by default.  If you want a higher frequency, this
-# may be set to 300 (5 minutes)
 registerinterval = 600
- 
-# authorization
+
+# Subcollectives (optional):
+# -------------------------
+main_collective = mcollective
+collectives     = mcollective
+
+# Auditing (optional):
+# -------------------
+plugin.rpcaudit.logfile =  /home/<%= @user %>/.mcollective/log/mcollective-audit.log
+rpcaudit = 1
+rpcauditprovider = logfile
+
+# Authorization (optional):
+# ------------------------
+plugin.actionpolicy.allow_unconfigured = 1
 rpcauthorization = 1
 rpcauthprovider = action_policy
-plugin.actionpolicy.allow_unconfigured = 1
-direct_addressing = 1
+
+# Logging:
+# -------
+logfile  = /home/<%= @user %>/.mcollective/log/mcollective.log
+loglevel = info
+
+# Platform defaults:
+# -----------------
+daemonize = 1
+libdir = /opt/puppet/libexec/mcollective/
+
+# Puppet Agent plugin configuration:
+# ---------------------------------
+plugin.puppet.splay = true
+plugin.puppet.splaylimit = 120
+plugin.puppet.command = /opt/puppet/bin/puppet agent
+plugin.puppet.config  = /home/<%= @user %>/.puppet/puppet.conf
