@@ -32,44 +32,45 @@ define clamps::mcollective (
 
   file { "/home/$user/.mcollective/ssl/ca.cert.pem":
     ensure  => file,
-    source  => 'file:///etc/puppetlabs/mcollective/ssl/ca.cert.pem',
+    content  => file('/etc/puppetlabs/mcollective/ssl.open/ca.cert.pem'),
     require => File["/home/$user/.mcollective/ssl/"],
     before  => File["/home/$user/.mcollective/server.cfg"],
-  }
+ } 
   file { "/home/$user/.mcollective/ssl/amq.private_key.pem":
     ensure  => file,
-    source  => 'file:///etc/puppetlabs/mcollective/ssl/amq.private_key.pem',
+    content  => file('/etc/puppetlabs/mcollective/ssl.open/certificate-authority.vm.private_key.pem'),
     require => File["/home/$user/.mcollective/ssl/"],
     before  => File["/home/$user/.mcollective/server.cfg"],
   }
   file { "/home/$user/.mcollective/ssl/amq.cert.pem":
     ensure  => file,
-    source  => 'file:///etc/puppetlabs/mcollective/ssl/amq.cert.pem',
+    content  => file('/etc/puppetlabs/mcollective/ssl.open/certificate-authority.vm.cert.pem'),
     require => File["/home/$user/.mcollective/ssl/"],
     before  => File["/home/$user/.mcollective/server.cfg"],
   }
-  file { "/home/$user/.mcollective/ssl/clients/pe-internal-console-mcollective-client.public_key.pem":
-    ensure  => file,
-    source  => 'file:///etc/puppetlabs/mcollective/ssl/clients/pe-internal-console-mcollective-client.public_key.pem',
-    require => File["/home/$user/.mcollective/ssl/clients/"],
-    before  => File["/home/$user/.mcollective/server.cfg"],
-  }
+#  file { "/home/$user/.mcollective/ssl/clients/pe-internal-console-mcollective-client.public_key.pem":
+#    ensure  => file,
+#    content  => file('/etc/puppetlabs/mcollective/ssl.open/clients/pe-internal-console-mcollective-client.public_key.pem'),
+#    require => File["/home/$user/.mcollective/ssl/clients/"],
+#    before  => File["/home/$user/.mcollective/server.cfg"],
+#  }
 
-  file { "/home/$user/.mcollective/ssl/clients/pe-internal-peadmin-mcollective-client.public_key.pem":
+  file { "/home/$user/.mcollective/ssl/clients/peadmin-public.pem":
     ensure  => file,
-    source  => 'file:///etc/puppetlabs/mcollective/ssl/clients/pe-internal-peadmin-mcollective-client.public_key.pem',
+    #content  => file('/etc/puppetlabs/mcollective/ssl.open/clients/pe-internal-peadmin-mcollective-client.public_key.pem'),
+    content  => file('/etc/puppetlabs/mcollective/ssl.open/clients/peadmin-public.pem'),
     require => File["/home/$user/.mcollective/ssl/clients/"],
     before  => File["/home/$user/.mcollective/server.cfg"],
   }
   file { "/home/$user/.mcollective/ssl/pe-internal-mcollective-servers.private_key.pem":
     ensure  => file,
-    source  => 'file:///etc/puppetlabs/mcollective/ssl/pe-internal-mcollective-servers.private_key.pem',
+    content  => file('/etc/puppetlabs/mcollective/ssl.open/mcollective-private.pem'),
     require => File["/home/$user/.mcollective/ssl/"],
     before  => File["/home/$user/.mcollective/server.cfg"],
   }
   file { "/home/$user/.mcollective/ssl/pe-internal-mcollective-servers.public_key.pem":
     ensure  => file,
-    source  => 'file:///etc/puppetlabs/mcollective/ssl/pe-internal-mcollective-servers.public_key.pem',
+    content  => file('/etc/puppetlabs/mcollective/ssl.open/mcollective-public.pem'),
     require => File["/home/$user/.mcollective/ssl/"],
     before  => File["/home/$user/.mcollective/server.cfg"],
   }
