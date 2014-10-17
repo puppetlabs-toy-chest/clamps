@@ -9,8 +9,8 @@ class clamps::agent (
   ::clamps::users { $nonroot_usernames: 
     servername => $master,
   }
-  ::clamps::mcollective { $nonroot_usernames: 
-    amqserver => $master,
-    amqpass   => $amqpass,
-  }
+  #::clamps::mcollective { $nonroot_usernames: 
+  #  amqserver => $master,
+  #  amqpass   => $amqpass,
+  #}
 }
