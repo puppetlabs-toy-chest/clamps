@@ -13,4 +13,10 @@ class clamps::agent (
   #  amqserver => $master,
   #  amqpass   => $amqpass,
   #}
+
+  resources {'user':
+    purge              => true,
+    unless_system_user => true,
+   }
+
 }
