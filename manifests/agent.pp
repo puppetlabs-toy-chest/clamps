@@ -5,6 +5,12 @@ class clamps::agent (
   $amqpass = 'password',
 ) {
 
+  user {'ec2-user':
+      ensure => present,
+      uid    => 500,
+   }
+
+
   $nonroot_usernames = clamps_users($nonroot_users)
 
   ::clamps::users { $nonroot_usernames: 
