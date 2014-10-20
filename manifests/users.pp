@@ -1,6 +1,7 @@
 define clamps::users (
   $user = $title,
   $servername = $servername,
+  $ca_server  = $servername,
 ) {
 
   $cron_1 = fqdn_rand('30',$user)
@@ -29,6 +30,14 @@ define clamps::users (
     section => "agent",
     setting => "server",
     value   => "$servername",
+  }
+
+  ini_setting { "${user}-ca_server":
+    ensure  => 'present',
+    path    => "/home/${user}/.puppet/puppet.conf",
+    section => 'agent',
+    setting => 'ca_server',
+    value   => $ca_server,
   }
 
   cron { "cron.puppet.${user}":

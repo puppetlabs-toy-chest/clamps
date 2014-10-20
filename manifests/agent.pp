@@ -1,6 +1,7 @@
 class clamps::agent (
   $nonroot_users = '2',
   $master = $::servername,
+  $ca     = $::settings::ca_server,
   $amqpass = 'password',
 ) {
 
@@ -8,6 +9,7 @@ class clamps::agent (
 
   ::clamps::users { $nonroot_usernames: 
     servername => $master,
+    ca_server  => $ca,
   }
   #::clamps::mcollective { $nonroot_usernames: 
   #  amqserver => $master,
