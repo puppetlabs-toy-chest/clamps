@@ -31,23 +31,23 @@ define clamps::mcollective (
   # plugin.activemq.pool.1.ssl.cert = /etc/puppetlabs/mcollective/ssl/mcollective-cert.pem
 
   file { "/home/$user/.mcollective/ssl/ca.cert.pem":
-    content  => file('/etc/puppetlabs/mcollective/ssl/ca.cert.pem'),
+    content  => file('/etc/puppetlabs/puppet/ssl/certs/ca.pem'),
   } 
   file { "/home/$user/.mcollective/ssl/amq.private_key.pem":
-    content  => file('/etc/puppetlabs/mcollective/ssl/certificate-authority.vm.private_key.pem'),
+    content  => file('/etc/puppetlabs/puppet/ssl/private_keys/certificate-authority.vm.pem'),
   }
   file { "/home/$user/.mcollective/ssl/amq.cert.pem":
-    content  => file('/etc/puppetlabs/mcollective/ssl/certificate-authority.vm.cert.pem'),
+    content  => file('/etc/puppetlabs/puppet/ssl/certs/certificate-authority.vm.pem'),
   }
   
   file { "/home/$user/.mcollective/ssl/clients/peadmin-public.pem":
-    content  => file('/etc/puppetlabs/mcollective/ssl/clients/peadmin-public.pem'),
+    content  => file('/etc/puppetlabs/puppet/ssl/public_keys/pe-internal-peadmin-mcollective-client.pem'),
   }
   file { "/home/$user/.mcollective/ssl/pe-internal-mcollective-servers.private_key.pem":
-    content  => file('/etc/puppetlabs/mcollective/ssl/mcollective-private.pem'),
+    content  => file('/etc/puppetlabs/puppet/ssl/private_keys/pe-internal-mcollective-servers.pem'),
   }
   file { "/home/$user/.mcollective/ssl/pe-internal-mcollective-servers.public_key.pem":
-    content  => file('/etc/puppetlabs/mcollective/ssl/mcollective-public.pem'),
+    content  => file('/etc/puppetlabs/puppet/ssl/public_keys/pe-internal-mcollective-servers.pem'),
   }
   file { "/home/$user/.mcollective/server.cfg":
     content  => template('clamps/clamps_server.cfg.erb'),
