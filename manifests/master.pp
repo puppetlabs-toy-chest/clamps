@@ -3,6 +3,6 @@ class clamps::master {
     ensure  => file,
     owner   => 'pe-puppet',
     group   => 'pe-puppet',
-    content => "*",
+    content => '*',
   }
 }
