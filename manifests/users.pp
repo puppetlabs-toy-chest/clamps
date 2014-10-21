@@ -9,7 +9,7 @@ define clamps::users (
 
   user { $user:
     ensure     => present,
-    managehome => 'true',
+    managehome => true,
   }
 
   file { "/home/${user}/.puppet":
@@ -24,11 +24,12 @@ define clamps::users (
   }
 
   ini_setting { "${user}-certname":
-    setting => "certname",
+    setting => 'certname',
     value   => "${user}-${::fqdn}",
   }
+  
   ini_setting { "${user}-servername":
-    setting => "server",
+    setting => 'server',
     value   => "$servername",
   }
 
@@ -39,7 +40,7 @@ define clamps::users (
 
   cron { "cron.puppet.${user}":
     command => '/opt/puppet/bin/puppet agent --onetime --no-daemonize',
-    user    => "${user}",
+    user    => $user,
     minute  => [ $cron_1, $cron_2 ],
     require => File["/home/${user}/.puppet"],
   }
