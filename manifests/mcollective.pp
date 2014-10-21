@@ -32,15 +32,12 @@ define clamps::mcollective (
 
   file { "/home/$user/.mcollective/ssl/ca.cert.pem":
     content  => file('/etc/puppetlabs/mcollective/ssl.open/ca.cert.pem'),
-    before  => File["/home/$user/.mcollective/server.cfg"],
  } 
   file { "/home/$user/.mcollective/ssl/amq.private_key.pem":
     content  => file('/etc/puppetlabs/mcollective/ssl.open/certificate-authority.vm.private_key.pem'),
-    before  => File["/home/$user/.mcollective/server.cfg"],
   }
   file { "/home/$user/.mcollective/ssl/amq.cert.pem":
     content  => file('/etc/puppetlabs/mcollective/ssl.open/certificate-authority.vm.cert.pem'),
-    before  => File["/home/$user/.mcollective/server.cfg"],
   }
 #  file { "/home/$user/.mcollective/ssl/clients/pe-internal-console-mcollective-client.public_key.pem":
 #    ensure  => file,
@@ -51,15 +48,12 @@ define clamps::mcollective (
 
   file { "/home/$user/.mcollective/ssl/clients/peadmin-public.pem":
     content  => file('/etc/puppetlabs/mcollective/ssl.open/clients/peadmin-public.pem'),
-    before  => File["/home/$user/.mcollective/server.cfg"],
   }
   file { "/home/$user/.mcollective/ssl/pe-internal-mcollective-servers.private_key.pem":
     content  => file('/etc/puppetlabs/mcollective/ssl.open/mcollective-private.pem'),
-    before  => File["/home/$user/.mcollective/server.cfg"],
   }
   file { "/home/$user/.mcollective/ssl/pe-internal-mcollective-servers.public_key.pem":
     content  => file('/etc/puppetlabs/mcollective/ssl.open/mcollective-public.pem'),
-    before  => File["/home/$user/.mcollective/server.cfg"],
   }
   file { "/home/$user/.mcollective/server.cfg":
     content  => template('clamps/clamps_server.cfg.erb'),
