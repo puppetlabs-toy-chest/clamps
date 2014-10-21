@@ -31,29 +31,23 @@ define clamps::mcollective (
   # plugin.activemq.pool.1.ssl.cert = /etc/puppetlabs/mcollective/ssl/mcollective-cert.pem
 
   file { "/home/$user/.mcollective/ssl/ca.cert.pem":
-    content  => file('/etc/puppetlabs/mcollective/ssl.open/ca.cert.pem'),
- } 
+    content  => file('/etc/puppetlabs/mcollective/ssl/ca.cert.pem'),
+  } 
   file { "/home/$user/.mcollective/ssl/amq.private_key.pem":
-    content  => file('/etc/puppetlabs/mcollective/ssl.open/certificate-authority.vm.private_key.pem'),
+    content  => file('/etc/puppetlabs/mcollective/ssl/certificate-authority.vm.private_key.pem'),
   }
   file { "/home/$user/.mcollective/ssl/amq.cert.pem":
-    content  => file('/etc/puppetlabs/mcollective/ssl.open/certificate-authority.vm.cert.pem'),
+    content  => file('/etc/puppetlabs/mcollective/ssl/certificate-authority.vm.cert.pem'),
   }
-#  file { "/home/$user/.mcollective/ssl/clients/pe-internal-console-mcollective-client.public_key.pem":
-#    ensure  => file,
-#    content  => file('/etc/puppetlabs/mcollective/ssl.open/clients/pe-internal-console-mcollective-client.public_key.pem'),
-#    require => File["/home/$user/.mcollective/ssl/clients/"],
-#    before  => File["/home/$user/.mcollective/server.cfg"],
-#  }
-
+  
   file { "/home/$user/.mcollective/ssl/clients/peadmin-public.pem":
-    content  => file('/etc/puppetlabs/mcollective/ssl.open/clients/peadmin-public.pem'),
+    content  => file('/etc/puppetlabs/mcollective/ssl/clients/peadmin-public.pem'),
   }
   file { "/home/$user/.mcollective/ssl/pe-internal-mcollective-servers.private_key.pem":
-    content  => file('/etc/puppetlabs/mcollective/ssl.open/mcollective-private.pem'),
+    content  => file('/etc/puppetlabs/mcollective/ssl/mcollective-private.pem'),
   }
   file { "/home/$user/.mcollective/ssl/pe-internal-mcollective-servers.public_key.pem":
-    content  => file('/etc/puppetlabs/mcollective/ssl.open/mcollective-public.pem'),
+    content  => file('/etc/puppetlabs/mcollective/ssl/mcollective-public.pem'),
   }
   file { "/home/$user/.mcollective/server.cfg":
     content  => template('clamps/clamps_server.cfg.erb'),
