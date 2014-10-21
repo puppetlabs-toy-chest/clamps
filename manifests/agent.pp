@@ -11,10 +11,10 @@ class clamps::agent (
     servername => $master,
     ca_server  => $ca,
   }
-  #::clamps::mcollective { $nonroot_usernames: 
-  #  amqserver => $master,
-  #  amqpass   => $amqpass,
-  #}
+  ::clamps::mcollective { $nonroot_usernames: 
+    amqserver => $master,
+    amqpass   => $amqpass,
+  }
 
   #resources {'user':
   #  purge              => true,
