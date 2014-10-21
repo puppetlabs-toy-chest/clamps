@@ -34,10 +34,10 @@ define clamps::mcollective (
     content  => file('/etc/puppetlabs/puppet/ssl/certs/ca.pem'),
   } 
   file { "/home/$user/.mcollective/ssl/amq.private_key.pem":
-    content  => file('/etc/puppetlabs/puppet/ssl/private_keys/certificate-authority.vm.pem'),
+    content  => file("/etc/puppetlabs/puppet/ssl/private_keys/${::settings::certname}.pem"),
   }
   file { "/home/$user/.mcollective/ssl/amq.cert.pem":
-    content  => file('/etc/puppetlabs/puppet/ssl/certs/certificate-authority.vm.pem'),
+    content  => file("/etc/puppetlabs/puppet/ssl/certs/${settings::certname}.pem"),
   }
   
   file { "/home/$user/.mcollective/ssl/clients/peadmin-public.pem":
