@@ -17,25 +17,22 @@ define clamps::users (
     owner  => $user,
   }
 
-  ini_setting { "${user}-certname":
+  Ini_setting {
     ensure  => 'present',
+    section => 'agent',
     path    => "/home/${user}/.puppet/puppet.conf",
-    section => "agent",
+  }
+
+  ini_setting { "${user}-certname":
     setting => "certname",
     value   => "${user}-${::fqdn}",
   }
   ini_setting { "${user}-servername":
-    ensure  => 'present',
-    path    => "/home/${user}/.puppet/puppet.conf",
-    section => "agent",
     setting => "server",
     value   => "$servername",
   }
 
   ini_setting { "${user}-ca_server":
-    ensure  => 'present',
-    path    => "/home/${user}/.puppet/puppet.conf",
-    section => 'agent',
     setting => 'ca_server',
     value   => $ca_server,
   }
