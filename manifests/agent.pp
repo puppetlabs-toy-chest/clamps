@@ -1,6 +1,7 @@
 class clamps::agent (
   $nonroot_users = '2',
   $master = $::servername,
+  $amqserver = $::servername,
   $ca     = $::settings::ca_server,
   $amqpass = file('/etc/puppetlabs/mcollective/credentials'),
 ) {
@@ -18,7 +19,7 @@ class clamps::agent (
   # The status override in the service resource makes the
   # non-root nodes work though
   ::clamps::mcollective { $nonroot_usernames: 
-    amqserver => $master,
+    amqserver => $amqserver,
     amqpass   => $amqpass,
   }
 
