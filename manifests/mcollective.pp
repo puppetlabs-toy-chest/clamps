@@ -10,9 +10,11 @@ define clamps::mcollective (
   # plugin.ssl_client_cert_dir = /etc/puppetlabs/mcollective/ssl/clients/
 
   File {
-    owner => $user,
-    group => $user,
-    mode  => '0600',
+    ensure  => file,
+    owner  => $user,
+    group  => $user,
+    mode   => '0600',
+    notify => Service["pe-mcollective-$user"],
   }
 
   file { [
@@ -21,7 +23,6 @@ define clamps::mcollective (
     "/home/$user/.mcollective/ssl/",
     "/home/$user/.mcollective/ssl/clients" ]:
     ensure  => directory,
-    require => User["$user"],
   }
 
 
@@ -29,39 +30,26 @@ define clamps::mcollective (
   # plugin.activemq.pool.1.ssl.key = /etc/puppetlabs/mcollective/ssl/mcollective-private.pem
   # plugin.activemq.pool.1.ssl.cert = /etc/puppetlabs/mcollective/ssl/mcollective-cert.pem
 
-  file { "/home/$user/.mcollective/ssl/mcollective-cacert.pem":
-    ensure  => file,
-    source  => 'file:///etc/puppetlabs/mcollective/ssl/mcollective-cacert.pem',
-    require => File["/home/$user/.mcollective/ssl/"],
-    before  => File["/home/$user/.mcollective/server.cfg"],
+  file { "/home/$user/.mcollective/ssl/ca.cert.pem":
+    content  => file('/etc/puppetlabs/puppet/ssl/certs/ca.pem'),
+  } 
+  file { "/home/$user/.mcollective/ssl/amq.private_key.pem":
+    content  => file("/etc/puppetlabs/puppet/ssl/private_keys/${::settings::certname}.pem"),
   }
-  file { "/home/$user/.mcollective/ssl/mcollective-private.pem":
-    ensure  => file,
-    source  => 'file:///etc/puppetlabs/mcollective/ssl/mcollective-private.pem',
-    require => File["/home/$user/.mcollective/ssl/"],
-    before  => File["/home/$user/.mcollective/server.cfg"],
+  file { "/home/$user/.mcollective/ssl/amq.cert.pem":
+    content  => file("/etc/puppetlabs/puppet/ssl/certs/${settings::certname}.pem"),
   }
-  file { "/home/$user/.mcollective/ssl/mcollective-cert.pem":
-    ensure  => file,
-    source  => 'file:///etc/puppetlabs/mcollective/ssl/mcollective-cert.pem',
-    require => File["/home/$user/.mcollective/ssl/"],
-    before  => File["/home/$user/.mcollective/server.cfg"],
-  }
-  file { "/home/$user/.mcollective/ssl/clients/puppet-dashboard-public.pem":
-    ensure  => file,
-    source  => 'file:///etc/puppetlabs/mcollective/ssl/clients/puppet-dashboard-public.pem',
-    require => File["/home/$user/.mcollective/ssl/clients/"],
-    before  => File["/home/$user/.mcollective/server.cfg"],
-  }
-
+  
   file { "/home/$user/.mcollective/ssl/clients/peadmin-public.pem":
-    ensure  => file,
-    source  => 'file:///etc/puppetlabs/mcollective/ssl/clients/peadmin-public.pem',
-    require => File["/home/$user/.mcollective/ssl/clients/"],
-    before  => File["/home/$user/.mcollective/server.cfg"],
+    content  => file('/etc/puppetlabs/puppet/ssl/public_keys/pe-internal-peadmin-mcollective-client.pem'),
+  }
+  file { "/home/$user/.mcollective/ssl/pe-internal-mcollective-servers.private_key.pem":
+    content  => file('/etc/puppetlabs/puppet/ssl/private_keys/pe-internal-mcollective-servers.pem'),
+  }
+  file { "/home/$user/.mcollective/ssl/pe-internal-mcollective-servers.public_key.pem":
+    content  => file('/etc/puppetlabs/puppet/ssl/public_keys/pe-internal-mcollective-servers.pem'),
   }
   file { "/home/$user/.mcollective/server.cfg":
-    ensure   => file,
     content  => template('clamps/clamps_server.cfg.erb'),
   }
 

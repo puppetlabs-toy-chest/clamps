@@ -1,6 +1,7 @@
 define clamps::users (
   $user = $title,
   $servername = $servername,
+  $ca_server  = $servername,
 ) {
 
   $cron_1 = fqdn_rand('30',$user)
@@ -8,7 +9,7 @@ define clamps::users (
 
   user { $user:
     ensure     => present,
-    managehome => 'true',
+    managehome => true,
   }
 
   file { "/home/${user}/.puppet":
@@ -16,24 +17,30 @@ define clamps::users (
     owner  => $user,
   }
 
-  ini_setting { "${user}-certname":
+  Ini_setting {
     ensure  => 'present',
+    section => 'agent',
     path    => "/home/${user}/.puppet/puppet.conf",
-    section => "agent",
-    setting => "certname",
+  }
+
+  ini_setting { "${user}-certname":
+    setting => 'certname',
     value   => "${user}-${::fqdn}",
   }
+  
   ini_setting { "${user}-servername":
-    ensure  => 'present',
-    path    => "/home/${user}/.puppet/puppet.conf",
-    section => "agent",
-    setting => "server",
+    setting => 'server',
     value   => "$servername",
+  }
+
+  ini_setting { "${user}-ca_server":
+    setting => 'ca_server',
+    value   => $ca_server,
   }
 
   cron { "cron.puppet.${user}":
     command => '/opt/puppet/bin/puppet agent --onetime --no-daemonize',
-    user    => "${user}",
+    user    => $user,
     minute  => [ $cron_1, $cron_2 ],
     require => File["/home/${user}/.puppet"],
   }
