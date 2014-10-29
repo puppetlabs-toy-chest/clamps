@@ -39,7 +39,7 @@ define clamps::users (
   }
 
   cron { "cron.puppet.${user}":
-    command => '/opt/puppet/bin/puppet agent --onetime --no-daemonize',
+    command => 'TIMEFORMAT="metrics.agent.time %R `date +%s`"; TIME=$( { time /opt/puppet/bin/puppet agent --onetime --no-daemonize > /dev/null; } 2>&1 ); echo "${TIME}" | nc metrics 2003',
     user    => $user,
     minute  => [ $cron_1, $cron_2 ],
     require => File["/home/${user}/.puppet"],
