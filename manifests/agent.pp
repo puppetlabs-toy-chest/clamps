@@ -4,13 +4,17 @@ class clamps::agent (
   $amqserver = $::servername,
   $ca     = $::settings::ca_server,
   $amqpass = file('/etc/puppetlabs/mcollective/credentials'),
+  $metrics_server = undef,
+  $metrics_port = 2003,
 ) {
 
   $nonroot_usernames = clamps_users($nonroot_users)
 
   ::clamps::users { $nonroot_usernames: 
-    servername => $master,
-    ca_server  => $ca,
+    servername     => $master,
+    ca_server      => $ca,
+    metrics_server => $metrics_server,
+    metrics_port   => $metrics_port,
   }
 
 

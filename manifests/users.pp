@@ -2,6 +2,8 @@ define clamps::users (
   $user = $title,
   $servername = $servername,
   $ca_server  = $servername,
+  $metrics_server = undef,
+  $metrics_port = 2003,
 ) {
 
   $cron_1 = fqdn_rand('30',$user)
@@ -27,7 +29,7 @@ define clamps::users (
     setting => 'certname',
     value   => "${user}-${::fqdn}",
   }
-  
+
   ini_setting { "${user}-servername":
     setting => 'server',
     value   => "$servername",
@@ -38,8 +40,20 @@ define clamps::users (
     value   => $ca_server,
   }
 
+  if $metrics_server {
+    file { "/home/${user}/time-puppet-run.sh":
+      ensure => file,
+      content => "TIMEFORMAT=\"metrics.${::fqdn}.${user}.time %R `date +%s`\"; TIME=$( { time /opt/puppet/bin/puppet agent --onetime --no-daemonize > /dev/null; } 2>&1 ); echo \$TIME | nc ${metrics_server} ${metrics_port}",
+    }
+  }
+
+  $cron_command = $metrics_server ? {
+    undef   => '/opt/puppet/bin/puppet agent --onetime --no-daemonize',
+    default => "/home/${user}/time-puppet-run.sh",
+  }
+
   cron { "cron.puppet.${user}":
-    command => 'TIMEFORMAT="metrics.agent.time %R `date +%s`"; TIME=$( { time /opt/puppet/bin/puppet agent --onetime --no-daemonize > /dev/null; } 2>&1 ); echo "${TIME}" | nc metrics 2003',
+    command => $cron_command,
     user    => $user,
     minute  => [ $cron_1, $cron_2 ],
     require => File["/home/${user}/.puppet"],
