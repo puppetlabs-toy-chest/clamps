@@ -6,8 +6,15 @@ class clamps::agent (
   $metrics_port        = 2003,
   $metrics_server      = undef,
   $nonroot_users       = '2',
+  $num_facts_per_agent = 500,
   $shuffle_amq_servers = true,
 ) {
+
+
+  file { '/etc/puppetlabs/clamps/num_facts':
+    ensure  => file,
+    content => $num_facts_per_agent,
+  }
 
   $nonroot_usernames = clamps_users($nonroot_users)
 
