@@ -9,7 +9,7 @@
 require 'securerandom'
 require 'facter'
 
-num_facts = File.exist?('/etc/puppetlabs/num_facts') ? File.read('/etc/puppetlabs/num_facts') : 500
+num_facts = File.exist?('/etc/puppetlabs/clamps/num_facts') ? File.read('/etc/puppetlabs/clamps/num_facts') : 500
 hash_of_facts = Hash.new {|h,k| h[k] = [] }
 
 for i in 1..num_facts
