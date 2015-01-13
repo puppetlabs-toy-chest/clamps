@@ -10,6 +10,9 @@ class clamps::agent (
   $shuffle_amq_servers = true,
 ) {
 
+  file { '/etc/puppetlabs/clamps':
+    ensure => directory
+  }
 
   file { '/etc/puppetlabs/clamps/num_facts':
     ensure  => file,
