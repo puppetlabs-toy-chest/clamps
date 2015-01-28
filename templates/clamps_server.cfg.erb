@@ -1,4 +1,3 @@
-
 # Centrally managed by Puppet version 3.7.1 (Puppet Enterprise 3.4.0-rc1-1223-g488a64a)
 # https://docs.puppetlabs.com/mcollective/configure/server.html
 
@@ -8,15 +7,17 @@ connector = activemq
 direct_addressing = 1
 
 # ActiveMQ connector settings:
-plugin.activemq.pool.size = 1
-plugin.activemq.pool.1.host = <%= @amqserver %>
-plugin.activemq.pool.1.port = 61613
-plugin.activemq.pool.1.user = mcollective
-plugin.activemq.pool.1.password = <%= @amqpass %> 
-plugin.activemq.pool.1.ssl = true
-plugin.activemq.pool.1.ssl.ca = /home/<%= @user %>/.mcollective/ssl/ca.cert.pem
-plugin.activemq.pool.1.ssl.cert = /home/<%= @user %>/.mcollective/ssl/amq.cert.pem
-plugin.activemq.pool.1.ssl.key = /home/<%= @user %>/.mcollective/ssl/amq.private_key.pem
+plugin.activemq.pool.size = <%= @amqservers.count %>
+<% @amqservers.each_with_index do |server,index| -%>
+plugin.activemq.pool.<%= index + 1 %>.host = <%= server %>
+plugin.activemq.pool.<%= index + 1 %>.port = 61613
+plugin.activemq.pool.<%= index + 1 %>.user = mcollective
+plugin.activemq.pool.<%= index + 1 %>.password = <%= @stomp_password %>
+plugin.activemq.pool.<%= index + 1 %>.ssl = true
+plugin.activemq.pool.<%= index + 1 %>.ssl.ca = /home/<%= @user %>/.mcollective/ssl/ca.cert.pem
+plugin.activemq.pool.<%= index + 1 %>.ssl.cert = /home/<%= @user %>/.mcollective/ssl/amq.cert.pem
+plugin.activemq.pool.<%= index + 1 %>.ssl.key = /home/<%= @user %>/.mcollective/ssl/amq.private_key.pem
+<% end -%>
 
 # Security plugin settings (required):
 # -----------------------------------

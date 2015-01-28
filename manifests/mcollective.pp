@@ -1,7 +1,7 @@
 define clamps::mcollective (
-  $user = $title,
-  $amqpass = 'password',
-  $amqserver = '$::server',
+  $user       = $title,
+  $amqpass    = 'password',
+  $amqservers = [$::settings::server],
 ) {
 
   # Directories to create / files to copy
@@ -39,7 +39,7 @@ define clamps::mcollective (
   file { "/home/$user/.mcollective/ssl/amq.cert.pem":
     content  => file("/etc/puppetlabs/puppet/ssl/certs/${settings::certname}.pem"),
   }
-  
+
   file { "/home/$user/.mcollective/ssl/clients/peadmin-public.pem":
     content  => file('/etc/puppetlabs/puppet/ssl/public_keys/pe-internal-peadmin-mcollective-client.pem'),
   }
@@ -60,5 +60,4 @@ define clamps::mcollective (
     stop      => "kill -9 `pgrep -u $user mcollectived`",
     subscribe => File["/home/$user/.mcollective/server.cfg"],
   }
-
 }
