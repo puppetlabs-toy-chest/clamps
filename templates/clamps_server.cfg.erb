@@ -12,7 +12,7 @@ plugin.activemq.pool.size = <%= @amqservers.count %>
 plugin.activemq.pool.<%= index + 1 %>.host = <%= server %>
 plugin.activemq.pool.<%= index + 1 %>.port = 61613
 plugin.activemq.pool.<%= index + 1 %>.user = mcollective
-plugin.activemq.pool.<%= index + 1 %>.password = <%= @stomp_password %>
+plugin.activemq.pool.<%= index + 1 %>.password = <%= @amqpass %>
 plugin.activemq.pool.<%= index + 1 %>.ssl = true
 plugin.activemq.pool.<%= index + 1 %>.ssl.ca = /home/<%= @user %>/.mcollective/ssl/ca.cert.pem
 plugin.activemq.pool.<%= index + 1 %>.ssl.cert = /home/<%= @user %>/.mcollective/ssl/amq.cert.pem
