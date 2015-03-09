@@ -1,5 +1,7 @@
 Clamps works with [beaker](https://github.com/puppetlabs/beaker) and the [Puppet Enterprise acceptance test suite](https://github.com/puppetlabs/pe_acceptance_tests) to build Amazon EC2 nodes on which it will simulate realistic Puppet client-server traffic and facts activity for performance testing.  See the [setup/scale documentation](https://github.com/puppetlabs/pe_acceptance_tests/tree/3.8.x/setup/scale) for more discussion on performance testing.
 
+Clamps generates a random set of users, and a random number of facts (from 5 to 75 facts). The facts change on every run which will also generate activity with puppetdb.  In testing, a m3.xlarge can run about 100 users with responsive mcollective and puppet runs.
+
 ### Using Clamps
 
 To run a performance test with clamps, you will need to do the following:
@@ -48,8 +50,12 @@ $ cp ../clamps/examples/12-host.cfg config/test.cfg
 $ time bundle exec beaker --color --debug --type pe --config config/test.cfg --tests setup/scale --preserve-hosts always
 ```
 
-#### Discussion
+If successful, the setup will run for at least 30 minutes. Due to a lack of parallel jobs in Beaker, larger clusters will take even longer.
 
-Clamps generates a random set of users, and a random number of facts (from 5 to 75 facts). The facts change on every run which will also generate activity with puppetdb.
+At the end of the run a dump of host information (suitable for adding to `/etc/hosts`) will be output.
 
-In testing, a m3.xlarge can run about 100 users with responsive mcollective and puppet runs.
+At this point, you should be able to log into the web console (via https) with admin/puppetlabs. E.g., if you have added `test-console` to `/etc/hosts` then you can log in via: https://test-console/
+
+**Note**:  As clamps is still under development, by default the puppet service is turned off on all the hosts (see: https://tickets.puppetlabs.com/browse/QENG-1726). This can be enabled manually by going to “Classification” in the web console. From the web console, open the "PE Mcollective" node group and add the "id is root" rule as shown:
+
+![adding "id is root"](https://cloud.githubusercontent.com/assets/6259/6564511/39eef00e-c677-11e4-8122-64c2e57ccd4f.png)
