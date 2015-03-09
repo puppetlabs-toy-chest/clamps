@@ -24,12 +24,21 @@ $ cd pe_acceptance_tests
 $ bundle install --path vendor/bundle
 ```
 
- - Set up the configuration file:
+ - Set up your configuration file:
 
 ```
+$ cd ~/src/  # or wherever you put your git checkouts
+$ git clone https://github.com/puppetlabs/clamps.git
+$ cd pe_acceptance_tests
 $ mkdir -p config
-$ curl https://gist.githubusercontent.com/rick/c527edba111bc9a776b6/raw/12eac7155b312f64623b972cd4b110045b900ca0/test.cfg | sed "s:PUPPET_USER:${USER}" > config/test.cfg
+$ cp ../clamps/examples/12-host.cfg config/test.cfg
 ```
+
+ - Update the configuration file:
+   - Replace any occurences of `PUPPET_USER` with your local username.
+   - Make sure that `:pe_dir:` points to where your downloaded copy of Puppet Enterprise can be found.
+   - Check that the values for `:default_vmname:`, `:default_platform:` and `:default_snapshot:` make sense.
+   - Feel free to tune the settings in the `clamps:` section.
 
  - Download a version of Puppet Enterprise from http://getpe.delivery.puppetlabs.net/ and place it in `~/Downloads/pe/`:
 
