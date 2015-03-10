@@ -33,7 +33,7 @@ $ cd ~/src/  # or wherever you put your git checkouts
 $ git clone https://github.com/puppetlabs/clamps.git
 $ cd pe_acceptance_tests
 $ mkdir -p config
-$ cp ../clamps/examples/12-host.cfg config/test.cfg
+$ cp ../clamps/examples/12-hosts.cfg config/test.cfg
 ```
 
  - Update the configuration file:
