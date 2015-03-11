@@ -6,7 +6,7 @@ Clamps generates a random set of users, and a random number of facts (from 5 to 
 
 To run a performance test with clamps, you will need to do the following:
 
- - Make sure that you have your SSH public key registered in [puppetlabs-modules](https://github.com/puppetlabs/puppetlabs-modules/) so that your key will be made available on the EC2 nodes that will be created.  You may need to file a pull request to make this happen (e.g., [puppetlabs-modules#3605](https://github.com/puppetlabs/puppetlabs-modules/pull/3605)).  Once this has landed your keys should be available after the next 30-minute Puppet run.
+ - Make sure that you have your SSH public key registered in [puppetlabs/puppetlabs-sshkeys](https://github.com/puppetlabs/puppetlabs-sshkeys) so that your key will be made available on the EC2 nodes that will be created.  You may need to file a pull request to make this happen (e.g., [puppetlabs/puppetlabs-sshkeys#81](https://github.com/puppetlabs/puppetlabs-sshkeys/pull/81).  Once this has landed your keys should be available for logging in on the `root` account of the EC2 nodes you will be creating.
 
  - Make sure that you have an AWS keypair (access key and secret access key) with sufficient permissions to be able to create and manage EC2 nodes.  You can create a help desk request on the [IT Help Desk - AWS Account portal](https://tickets.puppetlabs.com/servicedesk/customer/portal/2/create/132)
 
