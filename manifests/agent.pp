@@ -8,6 +8,7 @@ class clamps::agent (
   $nonroot_users       = '2',
   $num_facts_per_agent = 500,
   $shuffle_amq_servers = true,
+  $daemonize           = false,
 ) {
 
   file { '/etc/puppetlabs/clamps':
@@ -26,6 +27,7 @@ class clamps::agent (
     ca_server      => $ca,
     metrics_server => $metrics_server,
     metrics_port   => $metrics_port,
+    daemonize      => $daemonize,
   }
 
   $amq_servers = $shuffle_amq_servers ? {
