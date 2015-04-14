@@ -32,7 +32,7 @@ This node group also assigns the `clamps::master` class to its members.
 
 #### `Clamps - Agent Nodes`
 
- - `Clamps - Agent Nodes`: which agents will have the clamps module installed. This includes both real nodes (or root agents) and non-root agents.
+ - `Clamps - Agent Nodes`: which agents will have the clamps module installed? This includes both real nodes (or root agents) and non-root agents.
 
 ![identifying clamps agent nodes](https://cloud.githubusercontent.com/assets/6259/7121873/2b7e6546-e1dd-11e4-8092-17745f1831c1.png)
 
@@ -53,7 +53,7 @@ This node group also assigns the `clamps` class to its members.
 
 #### `PE MCollective`
 
- - `PE MCollective`: Agents which will be participating in MCollective (which is not normally the case for non-root agents on a node with an existing root agent).
+ - `PE MCollective`: which agents which will be participating in MCollective (which is not normally the case for non-root agents on a node with an existing root agent)?
 
 ![Enabling MCollective](https://cloud.githubusercontent.com/assets/6259/7121978/c5b4dd7a-e1dd-11e4-8370-e2cb199054d7.png)
 
