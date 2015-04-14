@@ -42,7 +42,12 @@ define clamps::users (
   }
 
   if $daemonize {
-    # TODO
+    # TODO: we need to capture run timings for publication to graphite
+
+    exec { "user ${user} daemon puppet agent":
+      command => "/usr/bin/sudo -u ${user} /opt/puppet/bin/agent --daemonize > /dev/null 2>&1",
+      path => "/bin:/usr/bin"
+    }
   else {
     if $metrics_server {
       file { "/home/${user}/time-puppet-run.sh":
