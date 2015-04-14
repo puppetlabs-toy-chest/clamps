@@ -10,6 +10,8 @@ In our testing, an Amazon EC2 `m3.xlarge` node can run about 100 users with resp
 
  - Assign `clamps::agent` to the root agents on your nodes, as it will install the non root puppet agent accounts, setup their cron job and configuration.
 
+ - Assign `clamps` to the non-root agents on your nodes.
+
 See below for using node classification groups to set things up.
 
 ## Clamps Classification
@@ -18,18 +20,43 @@ We make use of clamps by assigning the nodes we're scale testing into clamps-rel
 
 The node groups of interest:
 
+#### `Clamps CA`
+
  - `Clamps CA`: which node will act as the CA for clamps agents? We typically pin a specific node to this group.
 
 ![designating a clamps CA](https://cloud.githubusercontent.com/assets/6259/7121830/edfdc0c2-e1dc-11e4-9760-b9708dea0bf2.png)
+
+This node group also assigns the `clamps::master` class to its members.
+
+![clamps::master class](https://cloud.githubusercontent.com/assets/6259/7147134/4b1fe7ee-e2be-11e4-98a7-2ee3cb7f6de4.png)
+
+#### `Clamps - Agent Nodes`
 
  - `Clamps - Agent Nodes`: which agents will have the clamps module installed. This includes both real nodes (or root agents) and non-root agents.
 
 ![identifying clamps agent nodes](https://cloud.githubusercontent.com/assets/6259/7121873/2b7e6546-e1dd-11e4-8092-17745f1831c1.png)
 
+This node group also assigns the `clamps::agent` class to its members.
+
+![clamps::agent class](https://cloud.githubusercontent.com/assets/6259/7147196/c1c607fc-e2be-11e4-986b-fdb398ca44c8.png)
+
+#### `Clamps - Agent Users (non root)`
+
  - `Clamps - Agent Users (non root)`: which agents are non-root agents?
 
 ![non-root agents](https://cloud.githubusercontent.com/assets/6259/7121939/8ba5e1ba-e1dd-11e4-8e4d-dead97ae07a5.png)
 
+This node group also assigns the `clamps` class to its members.
+
+![clamps class](https://cloud.githubusercontent.com/assets/6259/7147269/6e112244-e2bf-11e4-9d8e-75d15613c113.png)
+
+
+#### `PE MCollective`
+
  - `PE MCollective`: Agents which will be participating in MCollective (which is not normally the case for non-root agents on a node with an existing root agent).
 
 ![Enabling MCollective](https://cloud.githubusercontent.com/assets/6259/7121978/c5b4dd7a-e1dd-11e4-8370-e2cb199054d7.png)
+
+This node group also assigns the `puppet_enterprise::profile::mcollective::agent` class to its members.
+
+![](https://cloud.githubusercontent.com/assets/6259/7147303/96d13d4a-e2bf-11e4-8b1e-d072db85cd88.png)
