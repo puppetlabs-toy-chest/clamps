@@ -48,7 +48,7 @@ define clamps::users (
       command => "/usr/bin/sudo -u ${user} /opt/puppet/bin/agent --daemonize > /dev/null 2>&1",
       path => "/bin:/usr/bin"
     }
-  else {
+  } else {
     if $metrics_server {
       file { "/home/${user}/time-puppet-run.sh":
         ensure => file,
