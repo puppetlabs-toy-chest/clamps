@@ -45,7 +45,7 @@ define clamps::users (
     # TODO: we need to capture run timings for publication to graphite
 
     exec { "user ${user} daemon puppet agent":
-      command => "/usr/bin/sudo -u ${user} /opt/puppet/bin/agent --daemonize > /dev/null 2>&1",
+      command => "/usr/bin/sudo -u ${user} /opt/puppet/bin/puppet agent --daemonize >/dev/null 2>&1",
       path => "/bin:/usr/bin"
     }
   } else {
