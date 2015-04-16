@@ -2,13 +2,13 @@ class clamps::agent (
   $amqpass             = file('/etc/puppetlabs/mcollective/credentials'),
   $amqserver           = [$::servername],
   $ca                  = $::settings::ca_server,
+  $daemonize           = false,
   $master              = $::servername,
   $metrics_port        = 2003,
   $metrics_server      = undef,
   $nonroot_users       = '2',
   $num_facts_per_agent = 500,
   $shuffle_amq_servers = true,
-  $daemonize           = false,
 ) {
 
   file { '/etc/puppetlabs/clamps':
