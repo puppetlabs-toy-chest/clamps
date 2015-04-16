@@ -1,17 +1,62 @@
-This is a combination of shit\_logic and non root puppet agents.
+Clamps is a puppet module designed to help simulate realistic facts and resources during scale testing. We anticipate it being used with  [beaker](https://github.com/puppetlabs/beaker), as we do at Puppet Labs, where we set up clusters of nodes using Amazon EC2.
 
-Replace classification of nodes with pe\_mcollective for it to work, right now it only works with a single master / activemq broker due to janky server.cfg creation for mcollective.
+The technique is to generate a random set of users on a machine each running a non-root agent out of the user's home directory. It also generates a random number of facts (from 5 to 75 facts). Since these facts change on each puppet run, this additionally creates puppetdb activity.
 
-This is now three classes that you have to use the PE 3.4 Node Manager to classify the servers with (since this also lets us test the NC now).
+In our testing, an Amazon EC2 `m3.xlarge` node can run about 100 users with responsive mcollective and puppet runs.
 
-the 'clamps' itself is just assigned to the nonroot puppet nodes (use a rule to assign to $id != root).
+## Clamps classes
 
-Modify the pe\_mcollective rule in the console to require $id = root.
+ - Assign `clamps::master` to the master node in the cluster.
 
-Assign 'clamps::master' to the master node in the cluster.
+ - Assign `clamps::agent` to the root agents on your nodes, as it will install the non root puppet agent accounts, setup their cron job and configuration.
 
-Assign 'clamps::agent' to the root agents on your nodes, as it will install the non root puppet agent accounts, setup their cron job and configuration (create a node group of 'fqdn != list of masters / console /puppetdb' and excludes $id != root)
+ - Assign `clamps` to the non-root agents on your nodes.
 
-This also uses the lots\_of\_facts fact, which generates a random amount of facts between 5 and 75 to compensate for the lack of facts gathered because non root doesn't appear to be able to retrieve as many facts. They change every puppet run also - so its hitting puppetdb more also.
+See below for using node classification groups to set things up.
 
-In testing, a m3.xlarge can run about 100 users with responsive mcollective and puppet runs.
+## Clamps Classification
+
+We make use of clamps by assigning the nodes we're scale testing into clamps-related node groups via the Puppet Enterprise web console (see the "Classification" tab there).
+
+The node groups of interest:
+
+#### `Clamps CA`
+
+ - `Clamps CA`: which node will act as the CA for clamps agents? We typically pin a specific node to this group.
+
+![designating a clamps CA](https://cloud.githubusercontent.com/assets/6259/7121830/edfdc0c2-e1dc-11e4-9760-b9708dea0bf2.png)
+
+This node group also assigns the `clamps::master` class to its members.
+
+![clamps::master class](https://cloud.githubusercontent.com/assets/6259/7147134/4b1fe7ee-e2be-11e4-98a7-2ee3cb7f6de4.png)
+
+#### `Clamps - Agent Nodes`
+
+ - `Clamps - Agent Nodes`: which agents will have the clamps module installed? This includes both real nodes (or root agents) and non-root agents.
+
+![identifying clamps agent nodes](https://cloud.githubusercontent.com/assets/6259/7121873/2b7e6546-e1dd-11e4-8092-17745f1831c1.png)
+
+This node group also assigns the `clamps::agent` class to its members.
+
+![clamps::agent class](https://cloud.githubusercontent.com/assets/6259/7147196/c1c607fc-e2be-11e4-986b-fdb398ca44c8.png)
+
+#### `Clamps - Agent Users (non root)`
+
+ - `Clamps - Agent Users (non root)`: which agents are non-root agents?
+
+![non-root agents](https://cloud.githubusercontent.com/assets/6259/7121939/8ba5e1ba-e1dd-11e4-8e4d-dead97ae07a5.png)
+
+This node group also assigns the `clamps` class to its members.
+
+![clamps class](https://cloud.githubusercontent.com/assets/6259/7147269/6e112244-e2bf-11e4-9d8e-75d15613c113.png)
+
+
+#### `PE MCollective`
+
+ - `PE MCollective`: which agents which will be participating in MCollective (which is not normally the case for non-root agents on a node with an existing root agent)?
+
+![Enabling MCollective](https://cloud.githubusercontent.com/assets/6259/7121978/c5b4dd7a-e1dd-11e4-8370-e2cb199054d7.png)
+
+This node group also assigns the `puppet_enterprise::profile::mcollective::agent` class to its members.
+
+![](https://cloud.githubusercontent.com/assets/6259/7147303/96d13d4a-e2bf-11e4-8b1e-d072db85cd88.png)
