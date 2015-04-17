@@ -1,7 +1,6 @@
 class clamps::master::hiera (
   $generate_data_bindings = true,
 ) {
-  $defaults = clamps_hiera_defaults()
 
   File {
     owner    => $::settings::user,
