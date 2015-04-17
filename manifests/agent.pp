@@ -2,6 +2,7 @@ class clamps::agent (
   $amqpass             = file('/etc/puppetlabs/mcollective/credentials'),
   $amqserver           = [$::servername],
   $ca                  = $::settings::ca_server,
+  $daemonize           = false,
   $master              = $::servername,
   $metrics_port        = 2003,
   $metrics_server      = undef,
@@ -26,6 +27,7 @@ class clamps::agent (
     ca_server      => $ca,
     metrics_server => $metrics_server,
     metrics_port   => $metrics_port,
+    daemonize      => $daemonize,
   }
 
   $amq_servers = $shuffle_amq_servers ? {

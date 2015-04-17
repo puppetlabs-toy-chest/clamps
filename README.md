@@ -6,13 +6,35 @@ In our testing, an Amazon EC2 `m3.xlarge` node can run about 100 users with resp
 
 ## Clamps classes
 
- - Assign `clamps::master` to the master node in the cluster.
 
- - Assign `clamps::agent` to the root agents on your nodes, as it will install the non root puppet agent accounts, setup their cron job and configuration.
+#### `clamps:master`
 
- - Assign `clamps` to the non-root agents on your nodes.
+Assign `clamps::master` to the master node in the cluster.
 
-See below for using node classification groups to set things up.
+#### `clamps::agent`
+
+Assign `clamps::agent` to the root agents on your nodes, as it will install the non root puppet agent accounts, setup their cron job and configuration.
+
+This class accepts the following parameters:
+
+ - `$amqpass`: credentials for MCollective AMQP bus
+ - `$amqserver`: server name for MCollective AMQP connection
+ - `$ca`: name of CA server
+ - `$daemonize`: run non-root agents daemonized? (default: `false`)
+ - `$master`: name of puppet master server
+ - `$metrics_port`: port to connect to graphite server
+ - `$metrics_server`: name of server where graphite is running
+ - `$nonroot_users`: number of non-root user agents to create (default: 2)
+ - `$num_facts_per_agent`: number of facts to create per non-root user agent
+ - `$shuffle_amq_servers`: randomize AMQP servers? (default: `true`)
+
+#### `clamps`
+
+Assign `clamps` to the non-root agents on your nodes.
+
+This class accepts the following parameter:
+
+ - `$logic`: relative level of complexity (hence load) to be introduced to the system. Higher values mean more complexity.
 
 ## Clamps Classification
 

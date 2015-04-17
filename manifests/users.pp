@@ -1,9 +1,10 @@
 define clamps::users (
-  $user = $title,
-  $servername = $servername,
-  $ca_server  = $servername,
+  $user           = $title,
+  $servername     = $servername,
+  $ca_server      = $servername,
   $metrics_server = undef,
-  $metrics_port = 2003,
+  $metrics_port   = 2003,
+  $daemonize      = false,
 ) {
 
   $cron_1 = fqdn_rand('30',$user)
@@ -40,22 +41,34 @@ define clamps::users (
     value   => $ca_server,
   }
 
-  if $metrics_server {
-    file { "/home/${user}/time-puppet-run.sh":
-      ensure => file,
-      content => "TIMEFORMAT=\"metrics.${::fqdn}.${user}.time %R `date +%s`\"; TIME=$( { time /opt/puppet/bin/puppet agent --onetime --no-daemonize > /dev/null; } 2>&1 ); echo \$TIME | nc ${metrics_server} ${metrics_port}",
+  if $daemonize {
+
+    exec { "user ${user} daemon puppet agent":
+      command => "/opt/puppet/bin/puppet agent --daemonize >/dev/null 2>&1",
+      user => $user,
+      environment => ["HOME=/home/${user}"],
+      path => "/bin:/usr/bin"
     }
-  }
 
-  $cron_command = $metrics_server ? {
-    undef   => '/opt/puppet/bin/puppet agent --onetime --no-daemonize',
-    default => "/home/${user}/time-puppet-run.sh",
-  }
+  } else {
 
-  cron { "cron.puppet.${user}":
-    command => $cron_command,
-    user    => $user,
-    minute  => [ $cron_1, $cron_2 ],
-    require => File["/home/${user}/.puppet"],
+    if $metrics_server {
+      file { "/home/${user}/time-puppet-run.sh":
+        ensure => file,
+        content => "TIMEFORMAT=\"metrics.${::fqdn}.${user}.time %R `date +%s`\"; TIME=$( { time /opt/puppet/bin/puppet agent --onetime --no-daemonize > /dev/null; } 2>&1 ); echo \$TIME | nc ${metrics_server} ${metrics_port}",
+      }
+    }
+
+    $cron_command = $metrics_server ? {
+      undef   => '/opt/puppet/bin/puppet agent --onetime --no-daemonize',
+      default => "/home/${user}/time-puppet-run.sh",
+    }
+
+    cron { "cron.puppet.${user}":
+      command => $cron_command,
+      user    => $user,
+      minute  => [ $cron_1, $cron_2 ],
+      require => File["/home/${user}/.puppet"],
+    }
   }
 }
