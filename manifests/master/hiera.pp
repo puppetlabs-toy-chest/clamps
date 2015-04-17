@@ -31,11 +31,17 @@ class clamps::master::hiera (
   }
 
 
-  # The function above generates hiera data keys from the
+  # The function below generates hiera data keys from the
   # existing classes and their params on disk
 
-  file { "${::settings::confdir}/hieradata/global.yaml":
-    ensure  => file,
-    content => inline_template("<%= @defaults.to_yaml %>"),
+  if $generate_data_bindings {
+
+    # Function returns a hash of databindings compatible key names.
+    $defaults = clamps_hiera_defaults()
+
+    file { "${::settings::confdir}/hieradata/global.yaml":
+      ensure  => file,
+      content => inline_template("<%= @defaults.to_yaml %>"),
+    }
   }
 }
