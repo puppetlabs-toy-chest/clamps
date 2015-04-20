@@ -10,11 +10,11 @@ module Puppet::Parser::Functions
   and the evaluated ruby object as the value. This preserves boolean/hash/array 
   EOS
 ) do |args|
-   
+
   #Puppet.parse_config
   environment = Puppet[:environment] || 'production'
-  resources = Puppet::Face[:resource_type, '0.0.1'].search('.*',{:extra => { 'environment' => environment }}) 
-   
+  resources = Puppet::Face[:resource_type, '0.0.1'].search('.*',{:extra => { 'environment' => environment }})
+
   response = Hash.new
     resources.each do |resource|
      resource.arguments.each do |k,v|
@@ -24,7 +24,7 @@ module Puppet::Parser::Functions
             result = v.evaluate('subscope')
           when "Puppet::Parser::AST::Undef"
             # "We don't want undef values..."
-            next 
+            next
           #when "Puppet::Parser::AST::Variable"
           #  # Remove the $ in the name and wrap in hiera
           #  # inpolation to defer the lookup until runtime
@@ -43,7 +43,7 @@ module Puppet::Parser::Functions
         # This should generate keys like "class::param": "value"
         # eyaml auto quotes anything with a colon in the string
         response["#{resource.name}::#{k.to_s}"] = result
-      end 
+      end
     end
     response
   end
