@@ -33,7 +33,6 @@ module Puppet::Parser::Functions
             next
           when "Puppet::Parser::AST::ASTHash"
             result = v.evaluate('subscope')
-            break if result.empty?
           when "Puppet::Parser::AST::ASTArray"
             result = v.evaluate('subscope')
           when "Puppet::Parser::AST::Boolean"
