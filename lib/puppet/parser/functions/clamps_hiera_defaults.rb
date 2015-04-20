@@ -26,17 +26,13 @@ module Puppet::Parser::Functions
       resource.arguments.each do |k,v|
         # Walk the AST types and evaluate them, Puppet 4 may need updates
         case v.class.to_s
-          when "Puppet::Parser::AST::String"
+          when "Puppet::Parser::AST::String",
+               "Puppet::Parser::AST::ASTArray",
+               "Puppet::Parser::AST::Boolean"
             result = v.evaluate('subscope')
           when "Puppet::Parser::AST::Undef"
             # "We don't want undef values..."
             next
-          when "Puppet::Parser::AST::ASTHash"
-            result = v.evaluate('subscope')
-          when "Puppet::Parser::AST::ASTArray"
-            result = v.evaluate('subscope')
-          when "Puppet::Parser::AST::Boolean"
-            result = v.evaluate('subscope')
           else
             # "We don't want raw puppet code like functions..."
             next
