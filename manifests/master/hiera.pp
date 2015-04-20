@@ -22,7 +22,7 @@ class clamps::master::hiera (
   }
 
   # Normally this directory would live in the control repo
-  # We pragmatically generate this data so it should not be
+  # We programmatically generate this data so it should not be
   # Version controlled.
 
   file { "${::settings::confdir}/hieradata":
