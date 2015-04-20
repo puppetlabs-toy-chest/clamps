@@ -17,7 +17,13 @@ module Puppet::Parser::Functions
 
   response = Hash.new
     resources.each do |resource|
-     resource.arguments.each do |k,v|
+      # TODO: Add support for Puppet::Parser::AST::Variable =>
+      # "%{#{v.to_s[1..-1]}}" so we can interpolate variables
+      # Currently we would need to post process text as to_yaml quotes
+      # booleans i.e. "${puppet_enterprise::params::manage_symlinks}"
+      # because they have colons in the name which causes them to be cast
+      # to strings during the hiera data bindings process
+      resource.arguments.each do |k,v|
         # Walk the AST types and evaluate them, Puppet 4 may need updates
         case v.class.to_s
           when "Puppet::Parser::AST::String"
@@ -25,10 +31,6 @@ module Puppet::Parser::Functions
           when "Puppet::Parser::AST::Undef"
             # "We don't want undef values..."
             next
-          #when "Puppet::Parser::AST::Variable"
-          #  # Remove the $ in the name and wrap in hiera
-          #  # inpolation to defer the lookup until runtime
-          #  result = "%{#{v.to_s[1..-1]}}"
           when "Puppet::Parser::AST::ASTHash"
             result = v.evaluate('subscope')
             break if result.empty?
