@@ -55,13 +55,12 @@ define clamps::users (
   } else {
 
     if $splaylimit {
-      $splay = true
       $splaylimitarg = "--splaylimit ${splaylimit}"
     } else {
       $splaylimitarg = ""
     }
 
-    if $splay {
+    if $splay or $splaylimit {
       $splayarg = "--splay"
     } else {
       $splayarg = ""
