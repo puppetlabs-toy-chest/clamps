@@ -27,6 +27,8 @@ This class accepts the following parameters:
  - `$nonroot_users`: number of non-root user agents to create (default: 2)
  - `$num_facts_per_agent`: number of facts to create per non-root user agent
  - `$shuffle_amq_servers`: randomize AMQP servers? (default: `true`)
+ - `$splay`: enable `--splay` setting on cron-based non-root user agent runs?
+ - `$splaylimit`: specify `--splaylimit` setting for cron-based non-root users agent runs.  Implies `$splay`.
 
 #### `clamps`
 
