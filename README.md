@@ -17,18 +17,18 @@ Assign `clamps::agent` to the root agents on your nodes, as it will install the 
 
 This class accepts the following parameters:
 
- - `$amqpass`: credentials for MCollective AMQP bus
- - `$amqserver`: server name for MCollective AMQP connection
- - `$ca`: name of CA server
- - `$daemonize`: run non-root agents daemonized? (default: `false`)
- - `$master`: name of puppet master server
- - `$metrics_port`: port to connect to graphite server
- - `$metrics_server`: name of server where graphite is running
- - `$nonroot_users`: number of non-root user agents to create (default: 2)
- - `$num_facts_per_agent`: number of facts to create per non-root user agent
- - `$shuffle_amq_servers`: randomize AMQP servers? (default: `true`)
- - `$splay`: enable `--splay` setting on cron-based non-root user agent runs?
- - `$splaylimit`: specify `--splaylimit` setting for cron-based non-root users agent runs.  Implies `$splay`.
+ - `$amqpass` (`String`): Credentials for MCollective AMQP bus.
+ - `$amqserver` (`String`): Server name for MCollective AMQP connection.
+ - `$ca` (`String`): Name of CA server.
+ - `$daemonize` (`Boolean`): Run non-root agents daemonized? (default: `false`)
+ - `$master` (`String`): Name of puppet master server.
+ - `$metrics_port` (`Integer`): Port to use when connecting to graphite server.
+ - `$metrics_server` (`String`): Name of server where graphite is running.
+ - `$nonroot_users` (`Integer`): Number of non-root user agents to create. (default: 2)
+ - `$num_facts_per_agent` (`Integer`): Number of facts to create per non-root user agent.
+ - `$shuffle_amq_servers` (`Boolean`): Randomize AMQP servers? (default: `true`)
+ - `$splay` (`Boolean`):  Enable `--splay` for non-user agent runs? (default: `false`).  See [Configuration: splay](https://docs.puppetlabs.com/references/latest/configuration.html#splay) for puppet agent semantics.
+ - `$splaylimit` (`String`): Set the `--splaylimit` parameter for non-user agent runs? (default: unset). Implies `splay`.  See [Configuration: splaylimit](https://docs.puppetlabs.com/references/latest/configuration.html#splaylimit) for puppet agent semantics.
 
 #### `clamps`
 
@@ -36,7 +36,7 @@ Assign `clamps` to the non-root agents on your nodes.
 
 This class accepts the following parameter:
 
- - `$logic`: relative level of complexity (hence load) to be introduced to the system. Higher values mean more complexity.
+ - `$logic` (`Integer`): relative level of complexity (hence load) to be introduced to the system. Higher values mean more complexity.
 
 ## Clamps Classification
 
