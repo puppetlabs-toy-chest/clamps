@@ -1,30 +1,119 @@
 # To compensate for our non-root user agents having virtually no facts,
-# we generate facts here.  We allow the clamps configuration to dictate
-# how many facts are generated.
+# we generate facts here.
+#
+# To exercise the parts of the stack which need to handle changing fact data
+# (e.g., puppetdb), we simulate changing fact values over the course of multiple
+# runs here.
+
+# We allow the clamps configuration to dictate how many facts are generated, and
+# what percentage of facts should change over each run.
 #
 # Since puppetdb can cache fact names and values, randomizing fact contents will
 # put more load on puppetdb.  Earlier implementations randomized all facts,
 # resulting in unrealistic scenarios for puppetdb.  We now expose the
 # percentage of fact randomization as a configuration setting as well.
+#
+#
 
 require "facter"
 
-# how many total facts were requested?
+# Number of facts to be generated, via the CLAMPS configuration (default: 500).
 def number_of_facts
   @number_of_facts ||=
     File.exist?("/etc/puppetlabs/clamps/num_facts") ?
       File.read("/etc/puppetlabs/clamps/num_facts").to_i : 500
 end
 
-# what percentage of facts should we change on each run?
+# Percentage of facts that should have changing values on each run, via the
+# CLAMPS configuration (default: 15).
 def percent_to_change
   @percent_to_change ||=
     File.exist?("/etc/puppetlabs/clamps/percent_facts") ?
       File.read("/etc/puppetlabs/clamps/percent_facts").to_i : 15
 end
 
-# A Hash containing a list of real-world-ish fact names as keys, with a sampled
-# real-world character length for that fact's value
+# Returns a Hash with `#number_of_facts` entries: keys are fact names, of the
+# form "clamps_#{name}_#{index}" (e.g., "clamps_uptime_1") taken from
+# `#sample_facts_with_lengths`. Values are the lengths of a fact value for this
+# key.
+def actual_facts_with_lengths
+  available = sample_facts_with_lengths.keys.sort
+  results = {}
+
+  pass = 1
+  0.upto(number_of_facts - 1) do |current|
+    fact_name = available[current % available.size]
+    results["clamps_#{fact_name}_#{pass}"] = sample_facts_with_lengths[fact_name]
+    pass += 1 if (current + 1) % available.size == 0
+  end
+
+  results
+end
+
+# Returns a random (alphanumeric + space) string of length `length`
+def random_string(length)
+  charset = (('0'..'9').to_a + ('a'..'z').to_a + ('A' .. 'Z').to_a + [" "])
+  (0...length).map{ charset[rand(charset.size)] }.join
+end
+
+# Returns a fixed-content string of length `length`
+def fill_string(length)
+  "A" * length
+end
+
+# Should debugging output be displayed?
+def debugging?
+  !!ENV['DEBUG']
+end
+
+# Update Facter with the given fact name and value.
+def set_fact_value(name, value)
+  puts "setting fact [#{name}] to [#{value}]" if debugging?
+  Facter.add(name) do
+    setcode do
+      value
+    end
+  end
+end
+
+# Fisher-Yates shuffle a copy of the list `list`
+# (http://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle)
+def permute(list)
+  working = list.dup
+
+  0.upto(working.length - 2) do |index|
+    position = rand(working.length - index) + index
+    working[position], working[index] = working[index], working[position]
+  end
+
+  working
+end
+
+# Returns a randomized sublist of length `length` from the list `list`.
+#
+# We use the Fisher-Yates `#permute` method to generate a shuffled `list`,
+# and select `length` elements from the front. We guarantee to provide the same
+#  sublist for a given `list` + `length` combo, whenever it is called (even
+# across different process invocations), hence "stable".
+def stable_random_sublist(list, length)
+  srand(1234567890)   # seed is arbitrary, but fixed srand() makes rand() stable
+  sub_list = permute(list).take(length)
+  srand               # revert back to unstable for any later calls to rand()
+  sub_list
+end
+
+# Returns an Array of fact names which should receive randomized values. We use
+# `#stable_random_sublist` to ensure that this list is always the same, even
+# on invocations in different processes.
+def fact_names_to_randomize
+  total_facts = actual_facts_with_lengths.keys.size
+  number_of_facts = (total_facts * (percent_to_change / 100.0)).to_i
+  stable_random_sublist(actual_facts_with_lengths.keys, number_of_facts)
+end
+
+# Returns a Hash containing a list of real-world fact names as keys, with a
+# sampled real-world string length for the fact's value.  Allows generating
+# unchanging or randomized fact values with real-world length distributions.
 def sample_facts_with_lengths
   {
     "architecture" => 7,
@@ -152,72 +241,10 @@ def sample_facts_with_lengths
   }
 end
 
-# Generate a Hash with `#number_of_facts` pairs: keys are fact names, of the
-# form "clamps_#{name}_#{index}" (e.g., "clamps_uptime_1") taken from
-# `#sample_facts_with_lengths`. Values are the "real-world" intended lengths
-# of a fact value for this key.
-def actual_facts_with_lengths
-  available = sample_facts_with_lengths.keys.sort
-  results = {}
-
-  pass = 1
-  0.upto(number_of_facts - 1) do |current|
-    fact_name = available[current % available.size]
-    results["clamps_#{fact_name}_#{pass}"] = sample_facts_with_lengths[fact_name]
-    pass += 1 if (current + 1) % available.size == 0
-  end
-
-  results
-end
-
-# Returns an alphanumeric (plus space) random string of length `length`
-def random_string(length)
-  charset = (('0'..'9').to_a + ('a'..'z').to_a + ('A' .. 'Z').to_a + [" "])
-  (0...length).map{ charset.to_a[rand(charset.size)] }.join
-end
-
-def fill_string(length)
-  "A" * length
-end
-
-def debugging?
-  !!ENV['DEBUG']
-end
-
-# Update Facter with the given fact name and value.
-def set_fact_value(name, value)
-  puts "setting fact [#{name}] to [#{value}]" if debugging?
-  Facter.add(name) do
-    setcode do
-      value
-    end
-  end
-end
-
-# Fisher-Yates shuffle a list
-# (http://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle)
-def permute(list)
-  working = list.dup
-  0.upto(working.length - 2) do |index|
-    position = rand(working.length - index) + index
-    working[position], working[index] = working[index], working[position]
-  end
-  working
-end
-
-def fact_names_to_randomize
-  total_facts = actual_facts_with_lengths.keys.size
-  number_of_facts = (total_facts * (percent_to_change / 100.0)).to_i
-
-  # generate a stable permutation of `number_of_facts` fact names
-  srand(1234567890)
-  fact_names = permute(actual_facts_with_lengths.keys).take(number_of_facts)
-  srand
-  fact_names
-end
-
+# get the list of facts which should be given random values
 randomized_facts = fact_names_to_randomize.inject({}) {|hash, name| hash[name] = true; hash }
 
+# for all facts for this agent, assign them values
 actual_facts_with_lengths.each_pair do |name, length|
   if randomized_facts[name]
     set_fact_value name, random_string(length)
