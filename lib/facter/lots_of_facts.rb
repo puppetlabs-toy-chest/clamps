@@ -3,7 +3,7 @@
 # puppetdb), we generate facts and provide changing fact values over the course
 # of multiple runs here.
 #
-# We allow the clamps configuration to dictate how many facts are generated, and
+# We allow the CLAMPS configuration to dictate how many facts are generated, and
 # what percentage of facts should change over each run.
 #
 # In earlier implementations, fact randomization generated long random values
@@ -23,7 +23,7 @@
 # facts and values with at least the length distributions we could expect to see
 # in the real world.
 #
-# We generate a list of clamps fact names that will be persistent across runs.
+# We generate a list of CLAMPS fact names that will be persistent across runs.
 # For a given number of facts per agent (`#number_of_facts`, below), the same
 # list of fact names will always be generated. These will be in the form
 # clamps_factname_index (e.g., "clamps_uptime_3"). This also implies a
@@ -124,11 +124,11 @@ def permute(list)
   working
 end
 
-# Returns a randomized sublist of length `length` from the list `list`.
+# Returns a stable randomized sublist of length `length` from the list `list`.
 #
 # We use the Fisher-Yates `#permute` method to generate a shuffled `list`,
 # and select `length` elements from the front. We guarantee to provide the same
-#  sublist for a given `list` + `length` combo, whenever it is called (even
+# sublist for a given `list` + `length` combo, whenever it is called (even
 # across different process invocations), hence "stable".
 def stable_random_sublist(list, length)
   srand(1234567890)   # seed is arbitrary, but fixed srand() makes rand() stable
@@ -143,7 +143,7 @@ end
 def fact_names_to_randomize
   total_facts = actual_facts_with_lengths.keys.size
   number_of_facts = (total_facts * (percent_to_change / 100.0)).to_i
-  stable_random_sublist(actual_facts_with_lengths.keys, number_of_facts)
+  stable_random_sublist(actual_facts_with_lengths.keys.sort, number_of_facts)
 end
 
 # Returns a Hash containing a list of real-world fact names as keys, with a
@@ -276,7 +276,8 @@ def sample_facts_with_lengths
   }
 end
 
-# get the list of facts which should be given random values
+# get the list of facts which should be given random values, make a Hash for
+# easily checking whether a name represents a randomized fact.
 randomized_facts = fact_names_to_randomize.inject({}) {|hash, name| hash[name] = true; hash }
 
 # for all facts for this agent, assign them values
