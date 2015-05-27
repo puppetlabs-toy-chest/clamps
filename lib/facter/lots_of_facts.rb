@@ -1,19 +1,54 @@
-# To compensate for our non-root user agents having virtually no facts,
-# we generate facts here.
+# To compensate for our non-root user agents having virtually no facts, and to
+# exercise the parts of the stack which need to handle changing fact data (e.g.,
+# puppetdb), we generate facts and provide changing fact values over the course
+# of multiple runs here.
 #
-# To exercise the parts of the stack which need to handle changing fact data
-# (e.g., puppetdb), we simulate changing fact values over the course of multiple
-# runs here.
-
 # We allow the clamps configuration to dictate how many facts are generated, and
 # what percentage of facts should change over each run.
 #
-# Since puppetdb can cache fact names and values, randomizing fact contents will
-# put more load on puppetdb.  Earlier implementations randomized all facts,
-# resulting in unrealistic scenarios for puppetdb.  We now expose the
-# percentage of fact randomization as a configuration setting as well.
+# In earlier implementations, fact randomization generated long random values
+# for every fact, with every value changing on every run. This meant 100% fact
+# churn, which ends up trashing the puppetdb cache (which ends up doing bad
+# things to puppetdb).
 #
+# Since the goal of CLAMPS is to provide load sufficient to exercise a puppet
+# deployment, and to give confidence that if the running system falls over that
+# it was not due to the artificial nature of testing, this prior approach was
+# undesirable.
 #
+# Here there are a few things happening:
+#
+# We extracted a set of real-world fact names from an agent running on an EC2
+# node. We saved the lengths of the fact values. This allows us to generate
+# facts and values with at least the length distributions we could expect to see
+# in the real world.
+#
+# We generate a list of clamps fact names that will be persistent across runs.
+# For a given number of facts per agent (`#number_of_facts`, below), the same
+# list of fact names will always be generated. These will be in the form
+# clamps_factname_index (e.g., "clamps_uptime_3"). This also implies a
+# consistency across agents running independently -- i.e., if two agents are
+# requested to have 100 facts, they will be the same 100 named facts on each
+# agent.
+#
+# Based upon configuration (`#percent_to_change` below), we choose a certain
+# number of facts to receive random values each run. The names of the facts
+# which get random values will be consistent between runs, and all other facts
+# always have the same values. This will also actually be consistent between
+# agents as well, provided the `#number_of_facts` and `#percent_to_change`
+# values are set identically.
+#
+# By choosing a fixed set of random fact names to change we avoid variation in
+# churn. The alternative is that if a random, say, 10% of facts are given random
+# values, we are either forced to save old fact values between runs to avoid
+# changing them (which introduces unwanted storage and serialization headaches),
+# or we end up changing old "randomized" values back to some known fixed value
+# while we randomize other fact values (which results in an inconsistent amount
+# of change between runs).
+#
+# Our techniques here should also better simulate real-world behavior, where
+# many facts never change over the lifetime of a node, and certain specific
+# facts are known to change regularly, across most nodes.
 
 require "facter"
 
