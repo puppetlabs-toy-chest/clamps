@@ -46,7 +46,7 @@ define clamps::users (
   if $daemonize {
 
     exec { "user ${user} daemon puppet agent":
-      command => "/opt/puppet/bin/puppet agent --daemonize >/dev/null 2>&1",
+      command => "/opt/puppetlabs/puppet/bin/puppet agent --daemonize >/dev/null 2>&1",
       user => $user,
       environment => ["HOME=/home/${user}"],
       path => "/bin:/usr/bin"
@@ -69,12 +69,12 @@ define clamps::users (
     if $metrics_server {
       file { "/home/${user}/time-puppet-run.sh":
         ensure => file,
-        content => "TIMEFORMAT=\"metrics.${::fqdn}.${user}.time %R `date +%s`\"; TIME=$( { time /opt/puppet/bin/puppet agent --onetime --no-daemonize ${splayarg} ${splaylimitarg} > /dev/null; } 2>&1 ); echo \$TIME | nc ${metrics_server} ${metrics_port}",
+        content => "TIMEFORMAT=\"metrics.${::fqdn}.${user}.time %R `date +%s`\"; TIME=$( { time /opt/puppetlabs/puppet/bin/puppet agent --onetime --no-daemonize ${splayarg} ${splaylimitarg} > /dev/null; } 2>&1 ); echo \$TIME | nc ${metrics_server} ${metrics_port}",
       }
     }
 
     $cron_command = $metrics_server ? {
-      undef   => "/opt/puppet/bin/puppet agent --onetime --no-daemonize ${splayarg} ${splaylimitarg}",
+      undef   => "/opt/puppetlabs/puppet/bin/puppet agent --onetime --no-daemonize ${splayarg} ${splaylimitarg}",
       default => "/home/${user}/time-puppet-run.sh",
     }
 
