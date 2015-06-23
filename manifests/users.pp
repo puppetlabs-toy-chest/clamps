@@ -17,7 +17,7 @@ define clamps::users (
     managehome => true,
   }
 
-  file { "/home/${user}/.puppet":
+  file { "/home/${user}/.puppetlabs":
     ensure => directory,
     owner  => $user,
   }
@@ -25,7 +25,7 @@ define clamps::users (
   Ini_setting {
     ensure  => 'present',
     section => 'agent',
-    path    => "/home/${user}/.puppet/puppet.conf",
+    path    => "/home/${user}/.puppetlabs/etc/puppet/puppet.conf",
   }
 
   ini_setting { "${user}-certname":
@@ -82,7 +82,7 @@ define clamps::users (
       command => $cron_command,
       user    => $user,
       minute  => [ $cron_1, $cron_2 ],
-      require => File["/home/${user}/.puppet"],
+      require => File["/home/${user}/.puppetlabs"],
     }
   }
 }
