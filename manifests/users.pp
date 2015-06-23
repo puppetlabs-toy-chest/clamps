@@ -17,7 +17,11 @@ define clamps::users (
     managehome => true,
   }
 
-  file { "/home/${user}/.puppet":
+  file { [
+    "/home/${user}/.puppetlabs",
+    "/home/${user}/.puppetlabs/etc",
+    "/home/${user}/.puppetlabs/etc/puppet",
+    ]:
     ensure => directory,
     owner  => $user,
   }
@@ -25,7 +29,7 @@ define clamps::users (
   Ini_setting {
     ensure  => 'present',
     section => 'agent',
-    path    => "/home/${user}/.puppet/puppet.conf",
+    path    => "/home/${user}/.puppetlabs/etc/puppet/puppet.conf",
   }
 
   ini_setting { "${user}-certname":
@@ -46,7 +50,7 @@ define clamps::users (
   if $daemonize {
 
     exec { "user ${user} daemon puppet agent":
-      command => "/opt/puppet/bin/puppet agent --daemonize >/dev/null 2>&1",
+      command => "/opt/puppetlabs/puppet/bin/puppet agent --daemonize >/dev/null 2>&1",
       user => $user,
       environment => ["HOME=/home/${user}"],
       path => "/bin:/usr/bin"
@@ -69,12 +73,12 @@ define clamps::users (
     if $metrics_server {
       file { "/home/${user}/time-puppet-run.sh":
         ensure => file,
-        content => "TIMEFORMAT=\"metrics.${::fqdn}.${user}.time %R `date +%s`\"; TIME=$( { time /opt/puppet/bin/puppet agent --onetime --no-daemonize ${splayarg} ${splaylimitarg} > /dev/null; } 2>&1 ); echo \$TIME | nc ${metrics_server} ${metrics_port}",
+        content => "TIMEFORMAT=\"metrics.${::fqdn}.${user}.time %R `date +%s`\"; TIME=$( { time /opt/puppetlabs/puppet/bin/puppet agent --onetime --no-daemonize ${splayarg} ${splaylimitarg} > /dev/null; } 2>&1 ); echo \$TIME | nc ${metrics_server} ${metrics_port}",
       }
     }
 
     $cron_command = $metrics_server ? {
-      undef   => "/opt/puppet/bin/puppet agent --onetime --no-daemonize ${splayarg} ${splaylimitarg}",
+      undef   => "/opt/puppetlabs/puppet/bin/puppet agent --onetime --no-daemonize ${splayarg} ${splaylimitarg}",
       default => "/home/${user}/time-puppet-run.sh",
     }
 
@@ -82,7 +86,7 @@ define clamps::users (
       command => $cron_command,
       user    => $user,
       minute  => [ $cron_1, $cron_2 ],
-      require => File["/home/${user}/.puppet"],
+      require => File["/home/${user}/.puppetlabs"],
     }
   }
 }

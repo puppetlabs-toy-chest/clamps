@@ -19,7 +19,7 @@ class clamps::agent (
 
   file { '/etc/puppetlabs/clamps/num_facts':
     ensure  => file,
-    content => $num_facts_per_agent,
+    content => "${num_facts_per_agent}",
   }
 
   $nonroot_usernames = clamps_users($nonroot_users)
