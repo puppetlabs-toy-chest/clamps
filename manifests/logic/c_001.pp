@@ -1,7 +1,5 @@
 class clamps::logic::c_001 {
 
-  include clamps::logic::c_000
-
   file {"/home/${id}/1_of_1": content => "${fqdn_rand(999999999999999999999999999999)}",}
   file {"/home/${id}/1_of_2": content => "${fqdn_rand(999999999999999999999999999999)}",}
   file {"/home/${id}/1_of_3": content => "${fqdn_rand(999999999999999999999999999999)}",}

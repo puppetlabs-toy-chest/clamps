@@ -13,7 +13,7 @@ destination = ARGV.shift || File.expand_path(File.join(File.dirname(__FILE__), "
   File.open(filename,'w') do |f|
     puts "Generating file [#{filename}]..."
     f.puts "class #{classname}::c_00#{i} {\n\n"
-    f.puts "  include #{classname}::c_00#{i-1}\n\n"
+    f.puts "  include #{classname}::c_00#{i-1}\n\n" unless i == 1
     1.upto(10) do |j|
       f.puts %Q|  file {"/home/${id}/#{i}_of_#{j}\": content => "${fqdn_rand(999999999999999999999999999999)}",}|
     end
