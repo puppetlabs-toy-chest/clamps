@@ -17,7 +17,11 @@ define clamps::users (
     managehome => true,
   }
 
-  file { "/home/${user}/.puppetlabs":
+  file { [
+    "/home/${user}/.puppetlabs",
+    "/home/${user}/.puppetlabs/etc",
+    "/home/${user}/.puppetlabs/etc/puppet",
+    ]:
     ensure => directory,
     owner  => $user,
   }
