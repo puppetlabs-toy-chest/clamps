@@ -14,10 +14,10 @@ class clamps (
 
   # create dynamic files
   $dynamic_files = clamps_files("/home/${id}/clamps_files/dynamic/", $num_dynamic_files)
-  each($static_files) | $index, $filename | {
+  each($dynamic_files) | $index, $filename | {
     file { $filename:
       ensure  => file,
-      content => "This is dynamic file content for file ${filename}: ${fqdn_rand(999999999999999999999999999999)}\n",
+      content => "This is dynamic file content for file ${filename}: ${shuffle(fqdn_rand_string(64))}\n",
     }
   }
 
