@@ -7,8 +7,10 @@ class clamps (
 
   # create static files
   $static_files = clamps_static_files("/home/${id}", $num_static_files)
-  file { $static_files:
-    ensure  => file,
-    content => "This is static file content for file ${name}.",
+  each($static_files) | $index, $filename | {
+    file { $filename:
+      ensure  => file,
+      content => "This is static file content for file ${filename}.\n",
+    }
   }
 }
