@@ -1,5 +1,4 @@
 class clamps (
-  $logic            = '1',
   $num_dynamic_files = 5,
   $num_static_files = 20,
 ) {
