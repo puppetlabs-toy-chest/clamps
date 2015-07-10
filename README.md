@@ -100,7 +100,8 @@ Assign `clamps` to the non-root agents on your nodes.
 
 This class accepts the following parameter:
 
- - `$logic` (`Integer`): relative level of complexity (hence load) to be introduced to the system. Higher values mean more complexity.
+ - `$num_static_files` (`Integer`): the number of unchanging `File` resources to create for each non-root user agent, (default: 20).
+ - `$num_dynamic_files` (`Integer`): the number of changing (with new contents on every agent run) `File` resources to create for each non-root user agent, (default: 5).
 
 ## CLAMPS Classification
 
