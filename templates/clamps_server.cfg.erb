@@ -36,7 +36,7 @@ plugin.yaml = /etc/puppetlabs/mcollective/facts.yaml
 
 identity = <%= @user %>-<%= scope['::fqdn'] %>
 
-classesfile = /var/opt/lib/pe-puppet/classes.txt
+classesfile = /opt/puppetlabs/puppet/cache/state/classes.txt
 
 # Registration (recommended):
 # -----------------------
@@ -68,11 +68,11 @@ loglevel = info
 # Platform defaults:
 # -----------------
 daemonize = 1
-libdir = /opt/puppet/libexec/mcollective/
+libdir = /opt/puppetlabs/mcollective/plugins:/opt/puppet/libexec/mcollective/
 
 # Puppet Agent plugin configuration:
 # ---------------------------------
 plugin.puppet.splay = true
 plugin.puppet.splaylimit = 120
-plugin.puppet.command = /opt/puppet/bin/puppet agent
+plugin.puppet.command = /opt/puppetlabs/bin/puppet agent
 plugin.puppet.config  = /home/<%= @user %>/.puppet/puppet.conf
