@@ -1,14 +1,17 @@
 class clamps::agent (
-  $amqpass             = file('/etc/puppetlabs/mcollective/credentials'),
-  $amqserver           = [$::servername],
-  $ca                  = $::settings::ca_server,
-  $daemonize           = false,
-  $master              = $::servername,
-  $metrics_port        = 2003,
-  $metrics_server      = undef,
-  $nonroot_users       = '2',
-  $num_facts_per_agent = 500,
-  $shuffle_amq_servers = true,
+  $amqpass               = file('/etc/puppetlabs/mcollective/credentials'),
+  $amqserver             = [$::servername],
+  $ca                    = $::settings::ca_server,
+  $daemonize             = false,
+  $master                = $::servername,
+  $metrics_port          = 2003,
+  $metrics_server        = undef,
+  $nonroot_users         = '2',
+  $num_facts_per_agent   = 500,
+  $percent_changed_facts = 15,
+  $shuffle_amq_servers   = true,
+  $splay                 = false,
+  $splaylimit            = undef,
 ) {
 
   file { '/etc/puppetlabs/clamps':
@@ -17,7 +20,12 @@ class clamps::agent (
 
   file { '/etc/puppetlabs/clamps/num_facts':
     ensure  => file,
-    content => $num_facts_per_agent,
+    content => "${num_facts_per_agent}",
+  }
+
+  file { '/etc/puppetlabs/clamps/percent_facts':
+    ensure  => file,
+    content => "${percent_changed_facts}",
   }
 
   $nonroot_usernames = clamps_users($nonroot_users)
@@ -28,6 +36,8 @@ class clamps::agent (
     metrics_server => $metrics_server,
     metrics_port   => $metrics_port,
     daemonize      => $daemonize,
+    splay          => $splay,
+    splaylimit     => $splaylimit,
   }
 
   $amq_servers = $shuffle_amq_servers ? {

@@ -32,7 +32,7 @@ define clamps::mcollective (
 
   file { "/home/$user/.mcollective/ssl/ca.cert.pem":
     content  => file('/etc/puppetlabs/puppet/ssl/certs/ca.pem'),
-  } 
+  }
   file { "/home/$user/.mcollective/ssl/amq.private_key.pem":
     content  => file("/etc/puppetlabs/puppet/ssl/private_keys/${::settings::certname}.pem"),
   }
@@ -56,7 +56,7 @@ define clamps::mcollective (
   service { "pe-mcollective-$user":
     provider  => base,
     ensure    => running,
-    start     => "su $user -c \'/opt/puppet/sbin/mcollectived --pid /home/$user/.mcollective/pe-mcollective.pid --config=/home/$user/.mcollective/server.cfg &\'",
+    start     => "su $user -c \'/opt/puppetlabs/puppet/bin/mcollectived --pid /home/$user/.mcollective/pe-mcollective.pid --config=/home/$user/.mcollective/server.cfg &\'",
     status    => "pgrep -u $user mcollectived",
     stop      => "kill -9 `pgrep -u $user mcollectived`",
     subscribe => File["/home/$user/.mcollective/server.cfg"],

@@ -1,12 +1,13 @@
 #!/usr/bin/env ruby
 
 module Puppet::Parser::Functions
-  newfunction(:clamps_users, :type => :rvalue) do |arg|
-    users = Array.new
-    $range = arg[0].to_i
-    for i in 1..$range
-      users.push("user#{i}")
+  newfunction(:clamps_users, :type => :rvalue) do |args|
+    range = args.first.to_i
+
+    users = []
+    1.upto(range) do |i|
+      users << "user#{i}"
     end
-    return users
+    users
   end
 end
