@@ -9,7 +9,6 @@ class clamps::agent (
   $nonroot_users         = '2',
   $num_facts_per_agent   = 500,
   $percent_changed_facts = 15,
-  $shuffle_amq_servers   = true,
   $splay                 = false,
   $splaylimit            = undef,
 ) {
@@ -40,17 +39,12 @@ class clamps::agent (
     splaylimit     => $splaylimit,
   }
 
-  $amq_servers = $shuffle_amq_servers ? {
-    true    => shuffle($amqserver),
-    default => $amqserver,
-  }
-
   # This will not allow the "main" mcollective to start as
   # it simply checks for a process named mcollective.
   # The status override in the service resource makes the
   # non-root nodes work though
   ::clamps::mcollective { $nonroot_usernames:
-    amqservers => $amq_servers,
+    amqservers => $amqserver,
     amqpass    => $amqpass,
   }
 
