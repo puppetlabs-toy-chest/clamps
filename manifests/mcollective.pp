@@ -2,6 +2,7 @@ define clamps::mcollective (
   $user       = $title,
   $amqpass    = 'password',
   $amqservers = [$::settings::server],
+  $mco_daemon = $clamps::agent::mco_daemon,
 ) {
 
   # Directories to create / files to copy
@@ -55,7 +56,7 @@ define clamps::mcollective (
 
   service { "pe-mcollective-$user":
     provider  => base,
-    ensure    => running,
+    ensure    => $mco_daemon,
     start     => "su $user -c \'/opt/puppetlabs/puppet/bin/mcollectived --pid /home/$user/.mcollective/pe-mcollective.pid --config=/home/$user/.mcollective/server.cfg &\'",
     status    => "pgrep -u $user mcollectived",
     stop      => "kill -9 `pgrep -u $user mcollectived`",

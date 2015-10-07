@@ -12,6 +12,7 @@ class clamps::agent (
   $shuffle_amq_servers   = true,
   $splay                 = false,
   $splaylimit            = undef,
+  $mco_daemon            = running,
 ) {
 
   file { '/etc/puppetlabs/clamps':
