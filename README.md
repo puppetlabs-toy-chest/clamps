@@ -90,7 +90,6 @@ This class accepts the following parameters:
  - `$nonroot_users` (`Integer`): Number of non-root user agents to create. (default: 2)
  - `$num_facts_per_agent` (`Integer`): Number of facts to create per non-root user agent.
  - `$percent_changed_facts` (`Integer`): What percentage (0-100) of facts will have new values on each run?
- - `$shuffle_amq_servers` (`Boolean`): Randomize AMQP servers? (default: `true`)
  - `$splay` (`Boolean`):  Enable `--splay` for non-user agent runs? (default: `false`).  See [Configuration: splay](https://docs.puppetlabs.com/references/latest/configuration.html#splay) for puppet agent semantics.
  - `$splaylimit` (`String`): Set the `--splaylimit` parameter for non-user agent runs? (default: unset). Implies `splay`.  See [Configuration: splaylimit](https://docs.puppetlabs.com/references/latest/configuration.html#splaylimit) for puppet agent semantics.
 
