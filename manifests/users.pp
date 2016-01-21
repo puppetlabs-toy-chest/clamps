@@ -9,8 +9,10 @@ define clamps::users (
   $splaylimit     = undef,
 ) {
 
-  $cron_1 = fqdn_rand('30',$user)
-  $cron_2 = fqdn_rand('30',$user) + 30
+  $user_cron_minute = clamps_user_number($user) % 30
+
+  $cron_1 = $user_cron_minute
+  $cron_2 = $user_cron_minute + 30
 
   user { $user:
     ensure     => present,
