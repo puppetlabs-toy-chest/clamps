@@ -44,9 +44,11 @@ class clamps::agent (
   # it simply checks for a process named mcollective.
   # The status override in the service resource makes the
   # non-root nodes work though
-  ::clamps::mcollective { $nonroot_usernames:
-    amqservers => $amqserver,
-    amqpass    => $amqpass,
+  if $mco_daemon == 'running' {
+    ::clamps::mcollective { $nonroot_usernames:
+      amqservers => $amqserver,
+      amqpass    => $amqpass,
+    }
   }
 
   # Need to manage the ec2-user if you enabled this
