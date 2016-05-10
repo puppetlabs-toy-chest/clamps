@@ -1,0 +1,103 @@
+#!/bin/bash
+# pxp-agent        Init script for running the PCP Execution Protocol (PXP) agent daemon
+#
+# chkconfig: - 98 02
+#
+# description: Agent for the PCP Execution Protocol (PXP), based on
+#              the Puppet Communications Protocol (PCP).
+# processname: pxp-agent
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+
+exec=/opt/puppetlabs/puppet/bin/pxp-agent
+prog="pxp-agent"
+desc="PXP agent"
+
+owner=<%= @user %>
+lockfile=/var/lock/subsys/$prog-$owner
+user_dir=/home/$owner/.puppetlabs
+piddir=$user_dir/var/run
+pidfile="${piddir}/${prog}.pid"
+pid=$(cat $pidfile 2> /dev/null)
+RETVAL=0
+
+config_file=$user_dir/etc/pxp-agent/pxp-agent.conf
+#TODO we shouldn't have to specify modules-dir here
+pxp_opts="--config-file=$config_file --modules-dir=$user_dir/opt/pxp-agent/modules"
+
+[ -x $exec ] || exit 5
+
+daemonopts="--pidfile $pidfile --user $owner"
+pidopts="-p $pidfile"
+USEINITFUNCTIONS=true
+
+start() {
+    echo -n $"Starting PXP agent: "
+    mkdir -p $piddir
+    daemon $daemonopts $exec ${pxp_opts}
+    RETVAL=$?
+    echo
+    [ $RETVAL = 0 ] && touch ${lockfile}
+    return $RETVAL
+}
+
+stop() {
+    echo -n $"Stopping PXP agent: "
+    killproc $pidopts $exec
+    RETVAL=$?
+    echo
+    [ $RETVAL = 0 ] && rm -f ${lockfile} ${pidfile}
+    return $RETVAL
+}
+
+reload() {
+    echo -n $"Reloading PXP agent: "
+    killproc $pidopts $exec -HUP
+    RETVAL=$?
+    echo
+    return $RETVAL
+}
+
+restart() {
+    stop
+    start
+}
+
+rh_status() {
+    status $pidopts $exec
+    RETVAL=$?
+    return $RETVAL
+}
+
+rh_status_q() {
+    rh_status >/dev/null 2>&1
+}
+
+case "$1" in
+    start)
+        start
+    ;;
+    stop)
+        stop
+    ;;
+    restart)
+        restart
+    ;;
+    reload|force-reload)
+        reload
+    ;;
+    condrestart|try-restart)
+        rh_status_q || exit 0
+        restart
+    ;;
+    status)
+        rh_status
+    ;;
+    *)
+        echo $"Usage: $0 {start|stop|status|restart|condrestart}"
+        exit 1
+esac
+
+exit $RETVAL

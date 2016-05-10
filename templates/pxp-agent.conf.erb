@@ -1,0 +1,11 @@
+{
+  "broker-ws-uri" : "wss://<%= @servername %>:8142/pcp/",
+  "ssl-key" : "<%= @config_path %>/etc/puppet/ssl/private_keys/<%= @agent_certname %>.pem",
+  "ssl-ca-cert" : "/etc/puppetlabs/puppet/ssl/certs/ca.pem",
+  "ssl-cert" : "<%= @config_path %>/etc/puppet/ssl/certs/<%= @agent_certname %>.pem",
+  "pidfile" : "<%= @config_path %>/var/run/pxp-agent.pid",
+  "logfile" : "<%= @config_path %>/var/log/pxp-agent.log",
+  "loglevel" : "debug",
+  "spool-dir" : "<%= @config_path %>/opt/pxp-agent/spool",
+  "modules-dir": "<%= @config_path %>/opt/pxp-agent/modules"
+}
