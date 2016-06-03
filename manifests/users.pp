@@ -5,6 +5,7 @@ define clamps::users (
   $metrics_server = undef,
   $metrics_port   = 2003,
   $daemonize      = false,
+  $run_pxp        = true,
   $splay          = false,
   $splaylimit     = undef,
 ) {
@@ -19,10 +20,22 @@ define clamps::users (
     managehome => true,
   }
 
+  $config_path = "/home/${user}/.puppetlabs"
+  $agent_certname = "${user}-${::fqdn}"
+
   file { [
-    "/home/${user}/.puppetlabs",
-    "/home/${user}/.puppetlabs/etc",
-    "/home/${user}/.puppetlabs/etc/puppet",
+    $config_path,
+    "${config_path}/bin",
+    "${config_path}/etc",
+    "${config_path}/etc/puppet",
+    "${config_path}/etc/pxp-agent",
+    "${config_path}/var",
+    "${config_path}/var/log",
+    "${config_path}/var/run",
+    "${config_path}/opt",
+    "${config_path}/opt/pxp-agent",
+    "${config_path}/opt/pxp-agent/spool",
+    "${config_path}/opt/pxp-agent/modules",
     ]:
     ensure => directory,
     owner  => $user,
@@ -31,12 +44,12 @@ define clamps::users (
   Ini_setting {
     ensure  => 'present',
     section => 'agent',
-    path    => "/home/${user}/.puppetlabs/etc/puppet/puppet.conf",
+    path    => "${config_path}/etc/puppet/puppet.conf",
   }
 
   ini_setting { "${user}-certname":
     setting => 'certname',
-    value   => "${user}-${::fqdn}",
+    value   => $agent_certname,
   }
 
   ini_setting { "${user}-servername":
@@ -49,13 +62,58 @@ define clamps::users (
     value   => $ca_server,
   }
 
+  file { "${config_path}/etc/pxp-agent/pxp-agent.conf":
+    ensure  => file,
+    owner   => $user,
+    content => template('clamps/pxp-agent.conf.erb'),
+    require =>File["${config_path}/etc/pxp-agent/"],
+  }
+
+  file { "${config_path}/opt/pxp-agent/modules/pxp-module-puppet":
+    ensure  => file,
+    owner   => $user,
+    mode    => '755',
+    content => file('clamps/pxp-module-puppet'),
+    require =>File["${config_path}/opt/pxp-agent/modules"],
+  }
+
+  if $run_pxp {
+    # there must be a safer way to do this
+    exec { "user ${user} puppet agent cert":
+      command => "/opt/puppetlabs/puppet/bin/puppet agent -t --noop --waitforcert=10 >/dev/null 2>&1",
+      user => $user,
+      environment => ["HOME=/home/${user}"],
+      path => "/bin:/usr/bin",
+      creates => "${config_path}/etc/puppet/ssl/certs/${agent_certname}.pem",
+    }
+    $pxp_ensure="running"
+  } else {
+    $pxp_ensure="stopped"
+  }
+  $pxp_service_script = "${config_path}/bin/pxp-agent.init"
+  file { "${pxp_service_script}":
+    ensure => file,
+    owner => $user,
+    mode => '755',
+    content => template('clamps/pxp-agent.init.erb'),
+    require =>File["${config_path}/bin"],
+  }->
+  service {"$user-pxp-agent":
+    ensure => $pxp_ensure,
+    start => "${pxp_service_script} start",
+    stop => "${pxp_service_script} stop",
+    status => "${pxp_service_script} status",
+    subscribe => File["${config_path}/etc/pxp-agent/pxp-agent.conf"],
+  }
+
   if $daemonize {
 
     exec { "user ${user} daemon puppet agent":
       command => "/opt/puppetlabs/puppet/bin/puppet agent --daemonize >/dev/null 2>&1",
       user => $user,
       environment => ["HOME=/home/${user}"],
-      path => "/bin:/usr/bin"
+      path => "/bin:/usr/bin",
+      unless => "ps -o pid= -p `cat ${config_path}/var/run/agent.pid`",
     }
 
   } else {
