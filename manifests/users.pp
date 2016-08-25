@@ -5,7 +5,7 @@ define clamps::users (
   $metrics_server = undef,
   $metrics_port   = 2003,
   $daemonize      = false,
-  $run_pxp        = true,
+  $run_pxp        = false,
   $splay          = false,
   $splaylimit     = undef,
 ) {
