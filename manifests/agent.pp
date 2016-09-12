@@ -13,6 +13,7 @@ class clamps::agent (
   $splay                 = false,
   $splaylimit            = undef,
   $mco_daemon            = running,
+  $run_pxp               = false,
 ) {
 
   file { '/etc/puppetlabs/clamps':
@@ -37,6 +38,7 @@ class clamps::agent (
     metrics_server => $metrics_server,
     metrics_port   => $metrics_port,
     daemonize      => $daemonize,
+    run_pxp        => $run_pxp,
     splay          => $splay,
     splaylimit     => $splaylimit,
   }
