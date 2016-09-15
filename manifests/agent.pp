@@ -12,6 +12,7 @@ class clamps::agent (
   $percent_changed_facts = 15,
   $splay                 = false,
   $splaylimit            = undef,
+  $use_cached_catalog = false,
   $mco_daemon            = running,
   $run_pxp               = false,
 ) {
@@ -41,6 +42,7 @@ class clamps::agent (
     run_pxp        => $run_pxp,
     splay          => $splay,
     splaylimit     => $splaylimit,
+    use_cached_catalog => $use_cached_catalog,
   }
 
   # This will not allow the "main" mcollective to start as

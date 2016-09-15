@@ -8,6 +8,7 @@ define clamps::users (
   $run_pxp        = false,
   $splay          = false,
   $splaylimit     = undef,
+  $use_cached_catalog = false,
 ) {
 
   $user_cron_minute = clamps_user_number($user) % 30
@@ -60,6 +61,11 @@ define clamps::users (
   ini_setting { "${user}-ca_server":
     setting => 'ca_server',
     value   => $ca_server,
+  }
+
+  ini_setting { "${user}-use_cached_catalog":
+    setting => 'use_cached_catalog',
+    value   => "${use_cached_catalog}",
   }
 
   file { "${config_path}/etc/pxp-agent/pxp-agent.conf":
