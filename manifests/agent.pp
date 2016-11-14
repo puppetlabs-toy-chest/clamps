@@ -13,7 +13,9 @@ class clamps::agent (
   $percent_changed_facts = 15,
   $splay                 = false,
   $splaylimit            = undef,
+  $use_cached_catalog = false,
   $mco_daemon            = running,
+  $run_pxp               = false,
 ) {
 
   file { '/etc/puppetlabs/clamps':
@@ -39,8 +41,10 @@ class clamps::agent (
     metrics_server => $metrics_server,
     metrics_port   => $metrics_port,
     daemonize      => $daemonize,
+    run_pxp        => $run_pxp,
     splay          => $splay,
     splaylimit     => $splaylimit,
+    use_cached_catalog => $use_cached_catalog,
   }
 
   # This will not allow the "main" mcollective to start as
