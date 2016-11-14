@@ -2,6 +2,7 @@ define clamps::users (
   $user           = $title,
   $servername     = $servername,
   $ca_server      = $servername,
+  $serverlist     = $serverlist,
   $metrics_server = undef,
   $metrics_port   = 2003,
   $daemonize      = false,
@@ -55,6 +56,11 @@ define clamps::users (
   ini_setting { "${user}-servername":
     setting => 'server',
     value   => "$servername",
+  }
+
+  ini_setting { "${user}-serverlist":
+    setting => 'server_list',
+    value   => "$serverlist",
   }
 
   ini_setting { "${user}-ca_server":

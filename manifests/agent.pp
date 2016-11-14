@@ -4,6 +4,7 @@ class clamps::agent (
   $ca                    = $::settings::ca_server,
   $daemonize             = false,
   $master                = $::servername,
+  $server_list           = $::servername,
   $orch_server           = $::servername,
   $metrics_port          = 2003,
   $metrics_server        = undef,
@@ -33,6 +34,7 @@ class clamps::agent (
 
   ::clamps::users { $nonroot_usernames:
     servername     => $master,
+    serverlist     => $server_list,
     ca_server      => $ca,
     metrics_server => $metrics_server,
     metrics_port   => $metrics_port,
