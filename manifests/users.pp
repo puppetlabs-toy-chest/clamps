@@ -2,12 +2,14 @@ define clamps::users (
   $user           = $title,
   $servername     = $servername,
   $ca_server      = $servername,
+  $serverlist     = $serverlist,
   $metrics_server = undef,
   $metrics_port   = 2003,
   $daemonize      = false,
-  $run_pxp        = true,
+  $run_pxp        = false,
   $splay          = false,
   $splaylimit     = undef,
+  $use_cached_catalog = false,
 ) {
 
   $user_cron_minute = clamps_user_number($user) % 30
@@ -57,9 +59,19 @@ define clamps::users (
     value   => "$servername",
   }
 
+  ini_setting { "${user}-serverlist":
+    setting => 'server_list',
+    value   => "$serverlist",
+  }
+
   ini_setting { "${user}-ca_server":
     setting => 'ca_server',
     value   => $ca_server,
+  }
+
+  ini_setting { "${user}-use_cached_catalog":
+    setting => 'use_cached_catalog',
+    value   => "${use_cached_catalog}",
   }
 
   file { "${config_path}/etc/pxp-agent/pxp-agent.conf":

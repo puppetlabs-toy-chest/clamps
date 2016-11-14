@@ -4,6 +4,8 @@ class clamps::agent (
   $ca                    = $::settings::ca_server,
   $daemonize             = false,
   $master                = $::servername,
+  $server_list           = $::servername,
+  $orch_server           = $::servername,
   $metrics_port          = 2003,
   $metrics_server        = undef,
   $nonroot_users         = '2',
@@ -11,7 +13,9 @@ class clamps::agent (
   $percent_changed_facts = 15,
   $splay                 = false,
   $splaylimit            = undef,
+  $use_cached_catalog = false,
   $mco_daemon            = running,
+  $run_pxp               = false,
 ) {
 
   file { '/etc/puppetlabs/clamps':
@@ -32,12 +36,15 @@ class clamps::agent (
 
   ::clamps::users { $nonroot_usernames:
     servername     => $master,
+    serverlist     => $server_list,
     ca_server      => $ca,
     metrics_server => $metrics_server,
     metrics_port   => $metrics_port,
     daemonize      => $daemonize,
+    run_pxp        => $run_pxp,
     splay          => $splay,
     splaylimit     => $splaylimit,
+    use_cached_catalog => $use_cached_catalog,
   }
 
   # This will not allow the "main" mcollective to start as
