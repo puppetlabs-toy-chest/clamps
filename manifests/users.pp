@@ -6,6 +6,7 @@ define clamps::users (
   $metrics_port   = 2003,
   $daemonize      = false,
   $run_pxp        = true,
+  $use_cached_catalog = $clamps::agent::use_cached_catalog,
   $splay          = false,
   $splaylimit     = undef,
 ) {
@@ -60,6 +61,11 @@ define clamps::users (
   ini_setting { "${user}-ca_server":
     setting => 'ca_server',
     value   => $ca_server,
+  }
+
+  ini_setting { "${user}-use_cached_catalog":
+    setting => 'use_cached_catalog',
+    value   => "${use_cached_catalog}",
   }
 
   file { "${config_path}/etc/pxp-agent/pxp-agent.conf":
