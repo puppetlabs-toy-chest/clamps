@@ -14,6 +14,7 @@ class clamps::agent (
   $splay                 = false,
   $splaylimit            = undef,
   $mco_daemon            = running,
+  $pxp_ping_interval     = 15,
 ) {
 
   file { '/etc/puppetlabs/clamps':

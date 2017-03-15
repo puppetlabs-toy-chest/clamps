@@ -6,6 +6,7 @@
   "pidfile" : "<%= @config_path %>/var/run/pxp-agent.pid",
   "logfile" : "<%= @config_path %>/var/log/pxp-agent.log",
   "loglevel" : "debug",
+  "ping-interval" : <%= scope['clamps::agent::pxp_ping_interval'] %>,
   "spool-dir" : "<%= @config_path %>/opt/pxp-agent/spool",
   "modules-dir": "<%= @config_path %>/opt/pxp-agent/modules"
 }

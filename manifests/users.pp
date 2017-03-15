@@ -105,10 +105,11 @@ define clamps::users (
     require =>File["${config_path}/bin"],
   }->
   service {"$user-pxp-agent":
-    ensure => $pxp_ensure,
-    start => "${pxp_service_script} start",
-    stop => "${pxp_service_script} stop",
-    status => "${pxp_service_script} status",
+    ensure    => $pxp_ensure,
+    start     => "${pxp_service_script} start",
+    stop      => "${pxp_service_script} stop",
+    restart   => "${pxp_service_script} restart",
+    status    => "${pxp_service_script} status",
     subscribe => File["${config_path}/etc/pxp-agent/pxp-agent.conf"],
   }
 
