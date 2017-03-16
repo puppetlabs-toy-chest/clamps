@@ -12,7 +12,7 @@ class clamps::agent (
   $percent_changed_facts = 15,
   $splay                 = false,
   $splaylimit            = undef,
-  $mco_daemon            = running,
+  $mco_daemon            = stopped,
 ) {
 
   file { '/etc/puppetlabs/clamps':
