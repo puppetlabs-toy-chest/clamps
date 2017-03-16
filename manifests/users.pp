@@ -36,7 +36,6 @@ define clamps::users (
     "${config_path}/opt",
     "${config_path}/opt/pxp-agent",
     "${config_path}/opt/pxp-agent/spool",
-    "${config_path}/opt/pxp-agent/modules",
     ]:
     ensure => directory,
     owner  => $user,
@@ -73,14 +72,6 @@ define clamps::users (
     owner   => $user,
     content => template('clamps/pxp-agent.conf.erb'),
     require =>File["${config_path}/etc/pxp-agent/"],
-  }
-
-  file { "${config_path}/opt/pxp-agent/modules/pxp-module-puppet":
-    ensure  => file,
-    owner   => $user,
-    mode    => '755',
-    content => file('clamps/pxp-module-puppet'),
-    require =>File["${config_path}/opt/pxp-agent/modules"],
   }
 
   if $run_pxp {
