@@ -11,6 +11,7 @@ class clamps::agent (
   $num_facts_per_agent   = 500,
   $percent_changed_facts = 15,
   $use_cached_catalog    = false,
+  $run_interval          = 30,
   $splay                 = false,
   $splaylimit            = undef,
   $mco_daemon            = running,
