@@ -84,6 +84,10 @@ define clamps::users (
     value   => "${use_cached_catalog}",
   }
 
+  $pcp_v2_compatible = versioncmp($::puppetversion, '4.9.0') >= 0
+  $pcp_version_config = if $pcp_v2_compatible { '"pcp-version": "2",' } else { '' }
+  $pcp_endpoint = if $pcp_v2_compatible { 'pcp2' } else { 'pcp' }
+
   file { "${config_path}/etc/pxp-agent/pxp-agent.conf":
     ensure  => file,
     owner   => $user,
@@ -104,6 +108,7 @@ define clamps::users (
   } else {
     $pxp_ensure="stopped"
   }
+
   $pxp_service_script = "${config_path}/bin/pxp-agent.init"
   file { "${pxp_service_script}":
     ensure => file,
