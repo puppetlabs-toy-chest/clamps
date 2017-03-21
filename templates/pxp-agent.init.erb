@@ -24,8 +24,7 @@ pid=$(cat $pidfile 2> /dev/null)
 RETVAL=0
 
 config_file=$user_dir/etc/pxp-agent/pxp-agent.conf
-#TODO we shouldn't have to specify modules-dir here
-pxp_opts="--config-file=$config_file --modules-dir=$user_dir/opt/pxp-agent/modules"
+pxp_opts="--config-file=$config_file"
 
 [ -x $exec ] || exit 5
 

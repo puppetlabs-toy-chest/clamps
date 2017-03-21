@@ -6,14 +6,32 @@ define clamps::users (
   $metrics_port   = 2003,
   $daemonize      = false,
   $run_pxp        = true,
+  $use_cached_catalog = $clamps::agent::use_cached_catalog,
+  $run_interval   = $clamps::agent::run_interval,
   $splay          = false,
   $splaylimit     = undef,
 ) {
 
-  $user_cron_minute = clamps_user_number($user) % 30
-
-  $cron_1 = $user_cron_minute
-  $cron_2 = $user_cron_minute + 30
+  if $run_interval == 30 {
+    $user_cron_minute = clamps_user_number($user) % 30
+    $cron_minute = [$user_cron_minute, $user_cron_minute + 30]
+    $cron_hour = '*'
+  } elsif $run_interval == 60 {
+    $user_cron_minute = clamps_user_number($user) % 60
+    $cron_minute = $user_cron_minute
+    $cron_hour = '*'
+  } elsif $run_interval == 120 {
+    $user_cron_minute = clamps_user_number($user) % 120
+    if $user_cron_minute < 60 {
+      $cron_minute = $user_cron_minute
+      $cron_hour = '0-23/2'
+    } else {
+      $cron_minute = $user_cron_minute % 60
+      $cron_hour = '1-24/2'
+    }
+  } else {
+    fail("only run_intervals of 30/60/120 are supported, not ${run_interval}")
+  }
 
   user { $user:
     ensure     => present,
@@ -35,7 +53,6 @@ define clamps::users (
     "${config_path}/opt",
     "${config_path}/opt/pxp-agent",
     "${config_path}/opt/pxp-agent/spool",
-    "${config_path}/opt/pxp-agent/modules",
     ]:
     ensure => directory,
     owner  => $user,
@@ -62,19 +79,20 @@ define clamps::users (
     value   => $ca_server,
   }
 
+  ini_setting { "${user}-use_cached_catalog":
+    setting => 'use_cached_catalog',
+    value   => "${use_cached_catalog}",
+  }
+
+  $pcp_v2_compatible = versioncmp($::puppetversion, '4.9.0') >= 0
+  $pcp_version_config = if $pcp_v2_compatible { '"pcp-version": "2",' } else { '' }
+  $pcp_endpoint = if $pcp_v2_compatible { 'pcp2' } else { 'pcp' }
+
   file { "${config_path}/etc/pxp-agent/pxp-agent.conf":
     ensure  => file,
     owner   => $user,
     content => template('clamps/pxp-agent.conf.erb'),
     require =>File["${config_path}/etc/pxp-agent/"],
-  }
-
-  file { "${config_path}/opt/pxp-agent/modules/pxp-module-puppet":
-    ensure  => file,
-    owner   => $user,
-    mode    => '755',
-    content => file('clamps/pxp-module-puppet'),
-    require =>File["${config_path}/opt/pxp-agent/modules"],
   }
 
   if $run_pxp {
@@ -90,6 +108,7 @@ define clamps::users (
   } else {
     $pxp_ensure="stopped"
   }
+
   $pxp_service_script = "${config_path}/bin/pxp-agent.init"
   file { "${pxp_service_script}":
     ensure => file,
@@ -99,10 +118,11 @@ define clamps::users (
     require =>File["${config_path}/bin"],
   }->
   service {"$user-pxp-agent":
-    ensure => $pxp_ensure,
-    start => "${pxp_service_script} start",
-    stop => "${pxp_service_script} stop",
-    status => "${pxp_service_script} status",
+    ensure    => $pxp_ensure,
+    start     => "${pxp_service_script} start",
+    stop      => "${pxp_service_script} stop",
+    restart   => "${pxp_service_script} restart",
+    status    => "${pxp_service_script} status",
     subscribe => File["${config_path}/etc/pxp-agent/pxp-agent.conf"],
   }
 
@@ -145,7 +165,8 @@ define clamps::users (
     cron { "cron.puppet.${user}":
       command => $cron_command,
       user    => $user,
-      minute  => [ $cron_1, $cron_2 ],
+      minute  => $cron_minute,
+      hour    => $cron_hour,
       require => File["/home/${user}/.puppetlabs"],
     }
   }
