@@ -35,7 +35,7 @@ class clamps::agent (
   $nonroot_usernames = clamps_users($nonroot_users)
 
   $nonroot_usernames.each |$name| {
-      ::clamps::users { $nonroot_usernames:
+      ::clamps::users { $name:
         servername         => $master,
         ca_server          => $ca,
         metrics_server     => $metrics_server,
