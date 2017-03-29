@@ -34,16 +34,18 @@ class clamps::agent (
 
   $nonroot_usernames = clamps_users($nonroot_users)
 
-  ::clamps::users { $nonroot_usernames:
-    servername         => $master,
-    ca_server          => $ca,
-    metrics_server     => $metrics_server,
-    metrics_port       => $metrics_port,
-    daemonize          => $daemonize,
-    splay              => $splay,
-    splaylimit         => $splaylimit,
+  $nonroot_usernames.each |$name| {
+      ::clamps::users { $nonroot_usernames:
+        servername         => $master,
+        ca_server          => $ca,
+        metrics_server     => $metrics_server,
+        metrics_port       => $metrics_port,
+        daemonize          => $daemonize,
+        splay              => $splay,
+        splaylimit         => $splaylimit,
+      }
   }
-
+  
   # This will not allow the "main" mcollective to start as
   # it simply checks for a process named mcollective.
   # The status override in the service resource makes the
