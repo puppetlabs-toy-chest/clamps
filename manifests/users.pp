@@ -85,7 +85,6 @@ define clamps::users (
   }
 
   $pcp_v2_compatible = versioncmp($::puppetversion, '4.9.0') >= 0
-  $pcp_version_config = if $pcp_v2_compatible { '"pcp-version": "2",' } else { '' }
   $pcp_endpoint = if $pcp_v2_compatible { 'pcp2' } else { 'pcp' }
 
   file { "${config_path}/etc/pxp-agent/pxp-agent.conf":
