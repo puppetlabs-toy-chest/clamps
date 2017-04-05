@@ -3,6 +3,7 @@ class clamps::agent (
   $amqserver             = [$::servername],
   $ca                    = $::settings::ca_server,
   $daemonize             = false,
+  $environment           = 'production',
   $master                = $::servername,
   $orch_server           = $::servername,
   $metrics_port          = 2003,
@@ -16,6 +17,7 @@ class clamps::agent (
   $splaylimit            = undef,
   $mco_daemon            = running,
   $pxp_ping_interval     = undef,
+  $pxp_mock_puppet       = false,
 ) {
 
   # Disable filebucket backups while managing clamps agents.

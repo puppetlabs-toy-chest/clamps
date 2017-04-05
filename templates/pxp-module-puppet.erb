@@ -1,0 +1,926 @@
+#!/opt/puppetlabs/puppet/bin/ruby
+#
+# Test: echo "{}" | ./pxp-module-puppet run
+
+require 'net/http'
+require 'openssl'
+require 'json'
+require 'securerandom'
+require 'etc'
+require 'socket'
+require 'uri'
+
+module Errors
+  InvalidJson = "invalid_json"
+  NoLastRunReport = "no_last_run_report"
+end
+
+DEFAULT_EXITCODE = -1
+
+def metadata()
+  return {
+    :description => "PXP Puppet module",
+    :actions => [
+      { :name        => "run",
+        :description => "Start a Puppet run",
+        :input       => {
+          :type      => "object",
+          :properties => {
+            :env => { :type => "array" },
+            :flags => {
+              :type => "array",
+              :items => { :type => "string" }
+            }
+          },
+          :required => [:flags]
+        },
+        :results => {
+          :type => "object",
+          :properties => {
+            :kind => { :type => "string" },
+            :time => { :type => "string" },
+            :transaction_uuid => { :type => "string" },
+            :environment => { :type => "string" },
+            :status => { :type => "string" },
+            :error_type => { :type => "string" },
+            :error => { :type => "string" },
+            :exitcode => { :type => "number" },
+            :version => { :type => "number" }
+          },
+          :required => [:kind, :time, :transaction_uuid, :environment, :status,
+                        :exitcode, :version]
+        }
+      }
+    ],
+    :configuration => {
+      :type => "object",
+      :properties => {
+        :puppet_bin => { :type => "string" }
+      }
+    }
+  }
+end
+
+def generate_facts(cert, config_path)
+  id = Etc.getlogin
+  fqdn = Socket.gethostname
+{"name"=>cert,
+ "values"=>
+  {"aio_agent_build"=>"1.10.1",
+   "aio_agent_version"=>"1.10.1",
+   "architecture"=>"x86_64",
+   "augeas"=>{"version"=>"1.4.0"},
+   "augeasprovider_grub_version"=>2,
+   "augeasversion"=>"1.4.0",
+   "bios_release_date"=>"04/01/2014",
+   "bios_vendor"=>"SeaBIOS",
+   "bios_version"=>"1.9.1-5.el7",
+   "blockdevice_vda_size"=>34359738368,
+   "blockdevice_vda_vendor"=>"0x1af4",
+   "blockdevices"=>"vda",
+   "chassistype"=>"Other",
+   "collectd_version"=>"5.7.1",
+   "concat_basedir"=>"#{config_path}/.puppetlabs/opt/puppet/cache/concat",
+   "dhcp_servers"=>{"eth0"=>"192.168.0.1", "system"=>"192.168.0.1"},
+   "disks"=>
+    {"vda"=>
+      {"size"=>"32.00+GiB", "size_bytes"=>34359738368, "vendor"=>"0x1af4"}},
+   "dmi"=>
+    {"bios"=>
+      {"release_date"=>"04/01/2014",
+       "vendor"=>"SeaBIOS",
+       "version"=>"1.9.1-5.el7"},
+     "chassis"=>{"type"=>"Other"},
+     "manufacturer"=>"Fedora+Project",
+     "product"=>{"name"=>"OpenStack+Nova"}},
+   "domain"=>"rfc1918.puppetlabs.net",
+   "env_temp_variable"=>"\\tmp",
+   "facterversion"=>"3.6.3",
+   "filesystems"=>"xfs",
+   "fqdn"=>fqdn,
+   "gid"=>id,
+   "gnupg_command"=>"/bin/gpg",
+   "gnupg_installed"=>true,
+   "hardwareisa"=>"x86_64",
+   "hardwaremodel"=>"x86_64",
+   "hostname"=>"10-32-164-40",
+   "id"=>id,
+   "identity"=>
+    {"gid"=>1001,
+     "group"=>id,
+     "privileged"=>false,
+     "uid"=>1001,
+     "user"=>id},
+   "interfaces"=>"eth0,lo",
+   "ip6tables_version"=>"1.4.21",
+   "ipaddress"=>"192.168.0.124",
+   "ipaddress6"=>"fe80::f816:3eff:feda:97dc",
+   "ipaddress6_eth0"=>"fe80::f816:3eff:feda:97dc",
+   "ipaddress6_lo"=>"::1",
+   "ipaddress_eth0"=>"192.168.0.124",
+   "ipaddress_lo"=>"127.0.0.1",
+   "iptables_version"=>"1.4.21",
+   "is_pe"=>false,
+   "is_virtual"=>false,
+   "java_default_home"=>".",
+   "jenkins_plugins"=>"",
+   "kernel"=>"Linux",
+   "kernelmajversion"=>"3.10",
+   "kernelrelease"=>"3.10.0-327.el7.x86_64",
+   "kernelversion"=>"3.10.0",
+   "load_averages"=>{"15m"=>1.74, "1m"=>1.68, "5m"=>1.68},
+   "macaddress"=>"fa:16:3e:da:97:dc",
+   "macaddress_eth0"=>"fa:16:3e:da:97:dc",
+   "manufacturer"=>"Fedora+Project",
+   "mco_client_config"=>"/etc/puppetlabs/mcollective/client.cfg",
+   "mco_client_settings"=>
+    {"libdir"=>
+      "/opt/puppetlabs/mcollective/plugins:/usr/share/mcollective/plugins:/usr/libexec/mcollective"},
+   "mco_confdir"=>"#{config_path}/mcollective/etc",
+   "mco_server_config"=>"/etc/puppetlabs/mcollective/server.cfg",
+   "memory"=>
+    {"swap"=>
+      {"available"=>"3.44+GiB",
+       "available_bytes"=>3689095168,
+       "capacity"=>"7.12%",
+       "total"=>"3.70+GiB",
+       "total_bytes"=>3972001792,
+       "used"=>"269.80+MiB",
+       "used_bytes"=>282906624},
+     "system"=>
+      {"available"=>"1.72+GiB",
+       "available_bytes"=>1851215872,
+       "capacity"=>"53.43%",
+       "total"=>"3.70+GiB",
+       "total_bytes"=>3975233536,
+       "used"=>"1.98+GiB",
+       "used_bytes"=>2124017664}},
+   "memoryfree"=>"1.72+GiB",
+   "memoryfree_mb"=>1765.45703125,
+   "memorysize"=>"3.70+GiB",
+   "memorysize_mb"=>3791.078125,
+   "mountpoints"=>
+    {"/"=>
+      {"available"=>"16.00+GiB",
+       "available_bytes"=>17180925952,
+       "capacity"=>"49.98%",
+       "device"=>"/dev/vda1",
+       "filesystem"=>"xfs",
+       "options"=>
+        ["rw", "seclabel", "relatime", "attr2", "inode64", "noquota"],
+       "size"=>"31.99+GiB",
+       "size_bytes"=>34345459712,
+       "used"=>"15.99+GiB",
+       "used_bytes"=>17164533760},
+     "/dev/shm"=>
+      {"available"=>"1.85+GiB",
+       "available_bytes"=>1987616768,
+       "capacity"=>"0%",
+       "device"=>"tmpfs",
+       "filesystem"=>"tmpfs",
+       "options"=>["rw", "seclabel", "nosuid", "nodev"],
+       "size"=>"1.85+GiB",
+       "size_bytes"=>1987616768,
+       "used"=>"0+bytes",
+       "used_bytes"=>0},
+     "/run"=>
+      {"available"=>"1.82+GiB",
+       "available_bytes"=>1953505280,
+       "capacity"=>"1.72%",
+       "device"=>"tmpfs",
+       "filesystem"=>"tmpfs",
+       "options"=>["rw", "seclabel", "nosuid", "nodev", "mode=755"],
+       "size"=>"1.85+GiB",
+       "size_bytes"=>1987616768,
+       "used"=>"32.53+MiB",
+       "used_bytes"=>34111488},
+     "/sys/fs/cgroup"=>
+      {"available"=>"1.85+GiB",
+       "available_bytes"=>1987616768,
+       "capacity"=>"0%",
+       "device"=>"tmpfs",
+       "filesystem"=>"tmpfs",
+       "options"=>["ro", "seclabel", "nosuid", "nodev", "noexec", "mode=755"],
+       "size"=>"1.85+GiB",
+       "size_bytes"=>1987616768,
+       "used"=>"0+bytes",
+       "used_bytes"=>0}},
+   "mtu_eth0"=>1500,
+   "mtu_lo"=>65536,
+   "mysql_server_id"=>17155740,
+   "netmask"=>"255.255.255.0",
+   "netmask6"=>"ffff:ffff:ffff:ffff::",
+   "netmask6_eth0"=>"ffff:ffff:ffff:ffff::",
+   "netmask6_lo"=>"ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff",
+   "netmask_eth0"=>"255.255.255.0",
+   "netmask_lo"=>"255.0.0.0",
+   "network"=>"192.168.0.0",
+   "network6"=>"fe80::",
+   "network6_eth0"=>"fe80::",
+   "network6_lo"=>"::1",
+   "network_eth0"=>"192.168.0.0",
+   "network_lo"=>"127.0.0.0",
+   "networking"=>
+    {"dhcp"=>"192.168.0.1",
+     "domain"=>"rfc1918.puppetlabs.net",
+     "fqdn"=>fqdn,
+     "hostname"=>"10-32-164-40",
+     "interfaces"=>
+      {"eth0"=>
+        {"bindings"=>
+          [{"address"=>"192.168.0.124",
+            "netmask"=>"255.255.255.0",
+            "network"=>"192.168.0.0"}],
+         "bindings6"=>
+          [{"address"=>"fe80::f816:3eff:feda:97dc",
+            "netmask"=>"ffff:ffff:ffff:ffff::",
+            "network"=>"fe80::"}],
+         "dhcp"=>"192.168.0.1",
+         "ip"=>"192.168.0.124",
+         "ip6"=>"fe80::f816:3eff:feda:97dc",
+         "mac"=>"fa:16:3e:da:97:dc",
+         "mtu"=>1500,
+         "netmask"=>"255.255.255.0",
+         "netmask6"=>"ffff:ffff:ffff:ffff::",
+         "network"=>"192.168.0.0",
+         "network6"=>"fe80::"},
+       "lo"=>
+        {"bindings"=>
+          [{"address"=>"127.0.0.1",
+            "netmask"=>"255.0.0.0",
+            "network"=>"127.0.0.0"}],
+         "bindings6"=>
+          [{"address"=>"::1",
+            "netmask"=>"ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff",
+            "network"=>"::1"}],
+         "ip"=>"127.0.0.1",
+         "ip6"=>"::1",
+         "mtu"=>65536,
+         "netmask"=>"255.0.0.0",
+         "netmask6"=>"ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff",
+         "network"=>"127.0.0.0",
+         "network6"=>"::1"}},
+     "ip"=>"192.168.0.124",
+     "ip6"=>"fe80::f816:3eff:feda:97dc",
+     "mac"=>"fa:16:3e:da:97:dc",
+     "mtu"=>1500,
+     "netmask"=>"255.255.255.0",
+     "netmask6"=>"ffff:ffff:ffff:ffff::",
+     "network"=>"192.168.0.0",
+     "network6"=>"fe80::",
+     "primary"=>"eth0"},
+   "openssl_version"=>"1.0.1e-fips",
+   "operatingsystem"=>"CentOS",
+   "operatingsystemmajrelease"=>"7",
+   "operatingsystemrelease"=>"7.2.1511",
+   "os"=>
+    {"architecture"=>"x86_64",
+     "family"=>"RedHat",
+     "hardware"=>"x86_64",
+     "name"=>"CentOS",
+     "release"=>{"full"=>"7.2.1511", "major"=>"7", "minor"=>"2"},
+     "selinux"=>
+      {"config_mode"=>"enforcing",
+       "config_policy"=>"targeted",
+       "current_mode"=>"enforcing",
+       "enabled"=>true,
+       "enforced"=>true,
+       "policy_version"=>"28"}},
+   "osfamily"=>"RedHat",
+   "package_provider"=>"yum",
+   "partitions"=>
+    {"/dev/vda1"=>
+      {"mount"=>"/", "size"=>"32.00+GiB", "size_bytes"=>34355945984}},
+   "path"=>
+    "/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/puppetlabs/bin:/home/#{id}/.local/bin:/home/#{id}/bin:/sbin",
+   "pe_concat_basedir"=>"#{config_path}/opt/puppet/cache/pe_concat",
+   "pe_razor_server_version"=>"package+pe-razor-server+is+not+installed",
+   "physicalprocessorcount"=>4,
+   "platform_symlink_writable"=>false,
+   "platform_tag"=>"el-7-x86_64",
+   "processor0"=>"Intel(R)+Xeon(R)+CPU+E5-2680+v3+@+2.50GHz",
+   "processor1"=>"Intel(R)+Xeon(R)+CPU+E5-2680+v3+@+2.50GHz",
+   "processor2"=>"Intel(R)+Xeon(R)+CPU+E5-2680+v3+@+2.50GHz",
+   "processor3"=>"Intel(R)+Xeon(R)+CPU+E5-2680+v3+@+2.50GHz",
+   "processorcount"=>4,
+   "processors"=>
+    {"count"=>4,
+     "isa"=>"x86_64",
+     "models"=>
+      ["Intel(R)+Xeon(R)+CPU+E5-2680+v3+@+2.50GHz",
+       "Intel(R)+Xeon(R)+CPU+E5-2680+v3+@+2.50GHz",
+       "Intel(R)+Xeon(R)+CPU+E5-2680+v3+@+2.50GHz",
+       "Intel(R)+Xeon(R)+CPU+E5-2680+v3+@+2.50GHz"],
+     "physicalcount"=>4},
+   "productname"=>"OpenStack+Nova",
+   "puppet_agent_pid"=>10412,
+   "puppet_client_datadir"=>
+    "#{config_path}/.puppetlabs/opt/puppet/cache/client_data",
+   "puppet_confdir"=>"#{config_path}/.puppetlabs/etc/puppet",
+   "puppet_config"=>"#{config_path}/.puppetlabs/etc/puppet/puppet.conf",
+   "puppet_environmentpath"=>"#{config_path}/.puppetlabs/etc/code/environments",
+   "puppet_files_dir_present"=>false,
+   "puppet_inventory_metadata"=>
+    {"packages"=>
+      {"collection_enabled"=>false, "last_collection_time"=>"0.0s"}},
+   "puppet_master_server"=>"puppet",
+   "puppet_ssldir"=>"#{config_path}/.puppetlabs/etc/puppet/ssl",
+   "puppet_sslpaths"=>
+    {"privatedir"=>
+      {"path"=>"#{config_path}/.puppetlabs/etc/puppet/ssl/private",
+       "path_exists"=>true},
+     "privatekeydir"=>
+      {"path"=>"#{config_path}/.puppetlabs/etc/puppet/ssl/private_keys",
+       "path_exists"=>true},
+     "publickeydir"=>
+      {"path"=>"#{config_path}/.puppetlabs/etc/puppet/ssl/public_keys",
+       "path_exists"=>true},
+     "certdir"=>
+      {"path"=>"#{config_path}/.puppetlabs/etc/puppet/ssl/certs",
+       "path_exists"=>true},
+     "requestdir"=>
+      {"path"=>"#{config_path}/.puppetlabs/etc/puppet/ssl/certificate_requests",
+       "path_exists"=>true},
+     "hostcrl"=>
+      {"path"=>"#{config_path}/.puppetlabs/etc/puppet/ssl/crl.pem",
+       "path_exists"=>true}},
+   "puppet_stringify_facts"=>false,
+   "puppet_vardir"=>"#{config_path}/.puppetlabs/opt/puppet/cache",
+   "puppetversion"=>"4.10.0",
+   "python2_version"=>"2.7.5",
+   "python_version"=>"2.7.5",
+   "root_home"=>"/root",
+   "rsyslog_version"=>"7.4.7",
+   "ruby"=>
+    {"platform"=>"x86_64-linux",
+     "sitedir"=>"/opt/puppetlabs/puppet/lib/ruby/site_ruby/2.1.0",
+     "version"=>"2.1.9"},
+   "rubyplatform"=>"x86_64-linux",
+   "rubysitedir"=>"/opt/puppetlabs/puppet/lib/ruby/site_ruby/2.1.0",
+   "rubyversion"=>"2.1.9",
+   "selinux"=>true,
+   "selinux_config_mode"=>"enforcing",
+   "selinux_config_policy"=>"targeted",
+   "selinux_current_mode"=>"enforcing",
+   "selinux_enforced"=>true,
+   "selinux_policyversion"=>"28",
+   "service_provider"=>"systemd",
+   "ssh"=>
+    {"ecdsa"=>
+      {"fingerprints"=>
+        {"sha1"=>"SSHFP+3+1+196952365f72a3330c672c9930db7e290e4e7d18",
+         "sha256"=>
+          "SSHFP+3+2+3b984767dbf48ba0723bd93859d586a6ba5db9cd898bb4bf0d3d32a7e5362edb"},
+       "key"=>
+        "AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBCGSBnXq3RZvX32/Iili09RaEevCjNWCwpSv/aZsIAVPZBGEvvEld7dpYZXsdiXkYmKk7JI25gCHowA5Q8ozmYQ="},
+     "ed25519"=>
+      {"fingerprints"=>
+        {"sha1"=>"SSHFP+4+1+55cd4bdbec53af8e262f30166fe222115ef2d0fb",
+         "sha256"=>
+          "SSHFP+4+2+210160a0f61282d4a89ec3131186dd52afbb2cb33dc9b8d9dae2b503b92103d6"},
+       "key"=>
+        "AAAAC3NzaC1lZDI1NTE5AAAAIOVKHE90xS/aSY3th9KUBz9OS9+5g7XWz1w6OCX0AgOL"},
+     "rsa"=>
+      {"fingerprints"=>
+        {"sha1"=>"SSHFP+1+1+269852af5bb46dece79ddba3131c60803aed22ba",
+         "sha256"=>
+          "SSHFP+1+2+86e05902a60b17c9ed894ff5d7590f896f54f479fe87bbe6cfa12189b8869f46"},
+       "key"=>
+        "AAAAB3NzaC1yc2EAAAADAQABAAABAQC7XGTmtMa5WxyXbLAIfcAcqco1hK8ctmEt2RCK0zds8QKvf1ShlHEhx7fh0pI7xdWD4PnKEBRr2tybK1HCQITlopFTh7T5k3wHyulsUeVj6qN5tzRpdeBU3UiHvDD0O1dBdmq4rpDe0A3IOXihKAUetQgql+zd5bNstyNEuqQrP+yjUDdlBDojMZ1+wfUBroqhfXRf8SGh7x+qOZjaJTTseSzQzpMV6wNCH47y0qmlDCvu38oY9Wf6ztLnuWjWAO1tneFIviHIjoVkLxNb81tvTre9SB3qvlHYwKpJF7nbJlqn8frRZYpdAikXfdBXhJ6zqhpobqPVAAagSPViHmpx"}},
+   "sshecdsakey"=>
+    "AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBCGSBnXq3RZvX32/Iili09RaEevCjNWCwpSv/aZsIAVPZBGEvvEld7dpYZXsdiXkYmKk7JI25gCHowA5Q8ozmYQ=",
+   "sshed25519key"=>
+    "AAAAC3NzaC1lZDI1NTE5AAAAIOVKHE90xS/aSY3th9KUBz9OS9+5g7XWz1w6OCX0AgOL",
+   "sshfp_ecdsa"=>
+    "SSHFP+3+1+196952365f72a3330c672c9930db7e290e4e7d18\nSSHFP+3+2+3b984767dbf48ba0723bd93859d586a6ba5db9cd898bb4bf0d3d32a7e5362edb",
+   "sshfp_ed25519"=>
+    "SSHFP+4+1+55cd4bdbec53af8e262f30166fe222115ef2d0fb\nSSHFP+4+2+210160a0f61282d4a89ec3131186dd52afbb2cb33dc9b8d9dae2b503b92103d6",
+   "sshfp_rsa"=>
+    "SSHFP+1+1+269852af5bb46dece79ddba3131c60803aed22ba\nSSHFP+1+2+86e05902a60b17c9ed894ff5d7590f896f54f479fe87bbe6cfa12189b8869f46",
+   "sshrsakey"=>
+    "AAAAB3NzaC1yc2EAAAADAQABAAABAQC7XGTmtMa5WxyXbLAIfcAcqco1hK8ctmEt2RCK0zds8QKvf1ShlHEhx7fh0pI7xdWD4PnKEBRr2tybK1HCQITlopFTh7T5k3wHyulsUeVj6qN5tzRpdeBU3UiHvDD0O1dBdmq4rpDe0A3IOXihKAUetQgql+zd5bNstyNEuqQrP+yjUDdlBDojMZ1+wfUBroqhfXRf8SGh7x+qOZjaJTTseSzQzpMV6wNCH47y0qmlDCvu38oY9Wf6ztLnuWjWAO1tneFIviHIjoVkLxNb81tvTre9SB3qvlHYwKpJF7nbJlqn8frRZYpdAikXfdBXhJ6zqhpobqPVAAagSPViHmpx",
+   "staging_http_get"=>"curl",
+   "swapfile_sizes"=>{"/mnt/swap.1"=>"3878908"},
+   "swapfile_sizes_csv"=>"/mnt/swap.1||3878908",
+   "swapfree"=>"3.44+GiB",
+   "swapfree_mb"=>3518.1953125,
+   "swapsize"=>"3.70+GiB",
+   "swapsize_mb"=>3787.99609375,
+   "system_uptime"=>
+    {"days"=>0, "hours"=>1, "seconds"=>5403, "uptime"=>"1:30+hours"},
+   "timezone"=>"UTC",
+   "uptime"=>"1:30+hours",
+   "uptime_days"=>0,
+   "uptime_hours"=>1,
+   "uptime_seconds"=>5403,
+   "vcsrepo_svn_ver"=>"",
+   "virtual"=>"physical",
+   "clientcert"=>cert,
+   "clientversion"=>"4.10.0",
+   "clientnoop"=>false},
+ "timestamp"=>Time.now,
+ "expiration"=>Time.now+30*60}
+end
+
+def generate_report(cert, config_version, transaction_uuid, catalog_uuid, code_id, environment)
+  id = Etc.getlogin
+{"host"=>cert,
+ "time"=>Time.now,
+ "configuration_version"=>config_version,
+ "transaction_uuid"=>transaction_uuid,
+ "catalog_uuid"=>catalog_uuid,
+ "code_id"=>code_id,
+ "cached_catalog_status"=>"not_used",
+ "report_format"=>6,
+ "puppet_version"=>"4.10.0",
+ "kind"=>"apply",
+ "status"=>"unchanged",
+ "noop"=>false,
+ "noop_pending"=>false,
+ "environment"=>environment,
+ "master_used"=>nil,
+ "logs"=>
+  [{"level"=>"info",
+    "message"=>"Using configured environment '#{environment}'",
+    "source"=>"Puppet",
+    "tags"=>["info"],
+    "time"=>Time.now,
+    "file"=>nil,
+    "line"=>nil},
+   {"level"=>"info",
+    "message"=>"Retrieving pluginfacts",
+    "source"=>"Puppet",
+    "tags"=>["info"],
+    "time"=>Time.now,
+    "file"=>nil,
+    "line"=>nil},
+   {"level"=>"info",
+    "message"=>"Retrieving plugin",
+    "source"=>"Puppet",
+    "tags"=>["info"],
+    "time"=>Time.now,
+    "file"=>nil,
+    "line"=>nil},
+   {"level"=>"info",
+    "message"=>"Loading facts",
+    "source"=>"Puppet",
+    "tags"=>["info"],
+    "time"=>Time.now,
+    "file"=>nil,
+    "line"=>nil},
+   {"level"=>"info",
+    "message"=>"Caching catalog for #{cert}",
+    "source"=>"Puppet",
+    "tags"=>["info"],
+    "time"=>Time.now,
+    "file"=>nil,
+    "line"=>nil},
+   {"level"=>"info",
+    "message"=>"Applying configuration version '#{config_version}'",
+    "source"=>"Puppet",
+    "tags"=>["info"],
+    "time"=>Time.now,
+    "file"=>nil,
+    "line"=>nil},
+   {"level"=>"notice",
+    "message"=>"Applied catalog in 0.30 seconds",
+    "source"=>"Puppet",
+    "tags"=>["notice"],
+    "time"=>Time.now,
+    "file"=>nil,
+    "line"=>nil}],
+ "metrics"=>
+  {"resources"=>
+    {"name"=>"resources",
+     "label"=>"Resources",
+     "values"=>
+      [["total", "Total", 12],
+       ["skipped", "Skipped", 0],
+       ["failed", "Failed", 0],
+       ["failed_to_restart", "Failed to restart", 0],
+       ["restarted", "Restarted", 0],
+       ["changed", "Changed", 0],
+       ["out_of_sync", "Out of sync", 0],
+       ["scheduled", "Scheduled", 0],
+       ["corrective_change", "Corrective change", 0]]},
+   "time"=>
+    {"name"=>"time",
+     "label"=>"Time",
+     "values"=>
+      [["filebucket", "Filebucket", 0.00021922100000000002],
+       ["file", "File", 0.005378043],
+       ["pe_anchor", "Pe anchor", 8.44e-05],
+       ["schedule", "Schedule", 0.000322413],
+       ["config_retrieval", "Config retrieval", 0.901037254],
+       ["total", "Total", 0.9070413310000001]]},
+   "changes"=>
+    {"name"=>"changes", "label"=>"Changes", "values"=>[["total", "Total", 0]]},
+   "events"=>
+    {"name"=>"events",
+     "label"=>"Events",
+     "values"=>
+      [["total", "Total", 0],
+       ["failure", "Failure", 0],
+       ["success", "Success", 0]]}},
+ "resource_statuses"=>
+  {"Filebucket[main]"=>
+    {"title"=>"main",
+     "file"=>"/etc/puppetlabs/code/environments/production/manifests/site.pp",
+     "line"=>17,
+     "resource"=>"Filebucket[main]",
+     "resource_type"=>"Filebucket",
+     "containment_path"=>["Stage[main]", "Main", "Filebucket[main]"],
+     "evaluation_time"=>9.9716e-05,
+     "tags"=>["filebucket", "main", "class"],
+     "time"=>Time.now,
+     "failed"=>false,
+     "changed"=>false,
+     "out_of_sync"=>false,
+     "skipped"=>false,
+     "change_count"=>0,
+     "out_of_sync_count"=>0,
+     "events"=>[],
+     "corrective_change"=>false},
+   "File[/home/#{id}/clamps_files/]"=>
+    {"title"=>"/home/#{id}/clamps_files/",
+     "file"=>
+      "/etc/puppetlabs/code/environments/production/modules/clamps/manifests/init.pp",
+     "line"=>6,
+     "resource"=>"File[/home/#{id}/clamps_files/]",
+     "resource_type"=>"File",
+     "containment_path"=>
+      ["Stage[main]", "Clamps", "File[/home/#{id}/clamps_files/]"],
+     "evaluation_time"=>0.0019605,
+     "tags"=>["file", "class", "clamps", "node", "default"],
+     "time"=>Time.now,
+     "failed"=>false,
+     "changed"=>false,
+     "out_of_sync"=>false,
+     "skipped"=>false,
+     "change_count"=>0,
+     "out_of_sync_count"=>0,
+     "events"=>[],
+     "corrective_change"=>false},
+   "File[/home/#{id}/clamps_files/static/]"=>
+    {"title"=>"/home/#{id}/clamps_files/static/",
+     "file"=>
+      "/etc/puppetlabs/code/environments/production/modules/clamps/manifests/init.pp",
+     "line"=>6,
+     "resource"=>"File[/home/#{id}/clamps_files/static/]",
+     "resource_type"=>"File",
+     "containment_path"=>
+      ["Stage[main]", "Clamps", "File[/home/#{id}/clamps_files/static/]"],
+     "evaluation_time"=>0.001740802,
+     "tags"=>["file", "class", "clamps", "node", "default"],
+     "time"=>Time.now,
+     "failed"=>false,
+     "changed"=>false,
+     "out_of_sync"=>false,
+     "skipped"=>false,
+     "change_count"=>0,
+     "out_of_sync_count"=>0,
+     "events"=>[],
+     "corrective_change"=>false},
+   "File[/home/#{id}/clamps_files/dynamic/]"=>
+    {"title"=>"/home/#{id}/clamps_files/dynamic/",
+     "file"=>
+      "/etc/puppetlabs/code/environments/production/modules/clamps/manifests/init.pp",
+     "line"=>6,
+     "resource"=>"File[/home/#{id}/clamps_files/dynamic/]",
+     "resource_type"=>"File",
+     "containment_path"=>
+      ["Stage[main]", "Clamps", "File[/home/#{id}/clamps_files/dynamic/]"],
+     "evaluation_time"=>0.001676741,
+     "tags"=>["file", "class", "clamps", "node", "default"],
+     "time"=>Time.now,
+     "failed"=>false,
+     "changed"=>false,
+     "out_of_sync"=>false,
+     "skipped"=>false,
+     "change_count"=>0,
+     "out_of_sync_count"=>0,
+     "events"=>[],
+     "corrective_change"=>false},
+   "Pe_anchor[puppet_enterprise:barrier:ca]"=>
+    {"title"=>"puppet_enterprise:barrier:ca",
+     "file"=>
+      "/opt/puppetlabs/puppet/modules/puppet_enterprise/manifests/init.pp",
+     "line"=>228,
+     "resource"=>"Pe_anchor[puppet_enterprise:barrier:ca]",
+     "resource_type"=>"Pe_anchor",
+     "containment_path"=>
+      ["Stage[main]",
+       "Puppet_enterprise",
+       "Pe_anchor[puppet_enterprise:barrier:ca]"],
+     "evaluation_time"=>8.44e-05,
+     "tags"=>
+      ["pe_anchor",
+       "puppet_enterprise:barrier:ca",
+       "class",
+       "puppet_enterprise",
+       "node",
+       "default"],
+     "time"=>Time.now,
+     "failed"=>false,
+     "changed"=>false,
+     "out_of_sync"=>false,
+     "skipped"=>false,
+     "change_count"=>0,
+     "out_of_sync_count"=>0,
+     "events"=>[],
+     "corrective_change"=>false},
+   "Schedule[puppet]"=>
+    {"title"=>"puppet",
+     "file"=>nil,
+     "line"=>nil,
+     "resource"=>"Schedule[puppet]",
+     "resource_type"=>"Schedule",
+     "containment_path"=>["Schedule[puppet]"],
+     "evaluation_time"=>8.6252e-05,
+     "tags"=>["schedule", "puppet"],
+     "time"=>Time.now,
+     "failed"=>false,
+     "changed"=>false,
+     "out_of_sync"=>false,
+     "skipped"=>false,
+     "change_count"=>0,
+     "out_of_sync_count"=>0,
+     "events"=>[],
+     "corrective_change"=>false},
+   "Schedule[hourly]"=>
+    {"title"=>"hourly",
+     "file"=>nil,
+     "line"=>nil,
+     "resource"=>"Schedule[hourly]",
+     "resource_type"=>"Schedule",
+     "containment_path"=>["Schedule[hourly]"],
+     "evaluation_time"=>5.4082e-05,
+     "tags"=>["schedule", "hourly"],
+     "time"=>Time.now,
+     "failed"=>false,
+     "changed"=>false,
+     "out_of_sync"=>false,
+     "skipped"=>false,
+     "change_count"=>0,
+     "out_of_sync_count"=>0,
+     "events"=>[],
+     "corrective_change"=>false},
+   "Schedule[daily]"=>
+    {"title"=>"daily",
+     "file"=>nil,
+     "line"=>nil,
+     "resource"=>"Schedule[daily]",
+     "resource_type"=>"Schedule",
+     "containment_path"=>["Schedule[daily]"],
+     "evaluation_time"=>4.3e-05,
+     "tags"=>["schedule", "daily"],
+     "time"=>Time.now,
+     "failed"=>false,
+     "changed"=>false,
+     "out_of_sync"=>false,
+     "skipped"=>false,
+     "change_count"=>0,
+     "out_of_sync_count"=>0,
+     "events"=>[],
+     "corrective_change"=>false},
+   "Schedule[weekly]"=>
+    {"title"=>"weekly",
+     "file"=>nil,
+     "line"=>nil,
+     "resource"=>"Schedule[weekly]",
+     "resource_type"=>"Schedule",
+     "containment_path"=>["Schedule[weekly]"],
+     "evaluation_time"=>4.0858e-05,
+     "tags"=>["schedule", "weekly"],
+     "time"=>Time.now,
+     "failed"=>false,
+     "changed"=>false,
+     "out_of_sync"=>false,
+     "skipped"=>false,
+     "change_count"=>0,
+     "out_of_sync_count"=>0,
+     "events"=>[],
+     "corrective_change"=>false},
+   "Schedule[monthly]"=>
+    {"title"=>"monthly",
+     "file"=>nil,
+     "line"=>nil,
+     "resource"=>"Schedule[monthly]",
+     "resource_type"=>"Schedule",
+     "containment_path"=>["Schedule[monthly]"],
+     "evaluation_time"=>4.3853e-05,
+     "tags"=>["schedule", "monthly"],
+     "time"=>Time.now,
+     "failed"=>false,
+     "changed"=>false,
+     "out_of_sync"=>false,
+     "skipped"=>false,
+     "change_count"=>0,
+     "out_of_sync_count"=>0,
+     "events"=>[],
+     "corrective_change"=>false},
+   "Schedule[never]"=>
+    {"title"=>"never",
+     "file"=>nil,
+     "line"=>nil,
+     "resource"=>"Schedule[never]",
+     "resource_type"=>"Schedule",
+     "containment_path"=>["Schedule[never]"],
+     "evaluation_time"=>5.4368e-05,
+     "tags"=>["schedule", "never"],
+     "time"=>Time.now,
+     "failed"=>false,
+     "changed"=>false,
+     "out_of_sync"=>false,
+     "skipped"=>false,
+     "change_count"=>0,
+     "out_of_sync_count"=>0,
+     "events"=>[],
+     "corrective_change"=>false},
+   "Filebucket[puppet]"=>
+    {"title"=>"puppet",
+     "file"=>nil,
+     "line"=>nil,
+     "resource"=>"Filebucket[puppet]",
+     "resource_type"=>"Filebucket",
+     "containment_path"=>["Filebucket[puppet]"],
+     "evaluation_time"=>0.000119505,
+     "tags"=>["filebucket", "puppet"],
+     "time"=>Time.now,
+     "failed"=>false,
+     "changed"=>false,
+     "out_of_sync"=>false,
+     "skipped"=>false,
+     "change_count"=>0,
+     "out_of_sync_count"=>0,
+     "events"=>[],
+     "corrective_change"=>false}},
+ "corrective_change"=>false}
+end
+
+def last_run_result(exitcode)
+  return {"kind"             => "unknown",
+          "time"             => "unknown",
+          "transaction_uuid" => "unknown",
+          "environment"      => "unknown",
+          "status"           => "unknown",
+          "exitcode"         => exitcode,
+          "version"          => 1}
+end
+
+def make_error_result(exitcode, error_type, error_message)
+  result = last_run_result(exitcode)
+  result["error_type"] = error_type
+  result["error"] = error_message
+  return result
+end
+
+def create_session(config_path, cert, host)
+  session = Net::HTTP.new(host, 8140)
+
+  ssl_path = File.join(config_path, 'etc', 'puppet', 'ssl')
+  session.ca_file = File.join(ssl_path, 'certs', 'ca.pem')
+  cert_path = File.join(ssl_path, 'certs', "#{cert}.pem")
+  session.cert = OpenSSL::X509::Certificate.new(File.read(cert_path, :encoding => Encoding::ASCII))
+  key_path = File.join(ssl_path, 'private_keys', "#{cert}.pem")
+  session.key = OpenSSL::PKey::RSA.new(File.read(key_path, :encoding => Encoding::ASCII))
+
+  session.verify_mode = OpenSSL::SSL::VERIFY_PEER
+  session.use_ssl = true
+  session.open_timeout = 120
+  session.read_timeout = nil  # unlimited
+  session
+end
+
+def run()
+  env = '<%= scope['clamps::agent::environment'] %>'
+  host = '<%= @servername %>'
+  cert = '<%= @agent_certname %>'
+  config_path = '<%= @config_path %>'
+
+  session = create_session(config_path, cert, host)
+  tx_uuid = SecureRandom.uuid
+
+  # GET /puppet/v3/node/<cert>?environment=<env>&transaction_uuid=<uuid>&fail_on_404=true
+  node_resp = session.get("/puppet/v3/node/#{cert}?environment=#{env}&transaction_uuid=#{tx_uuid}&fail_on_404=true")
+  if node_resp.code != '200'
+    return make_error_result(DEFAULT_EXITCODE, Errors::NoLastRunReport, "Puppet node request failed")
+  end
+
+  begin
+    node_data = JSON.parse(node_resp.body)
+    # Use environment from node response
+    env = node_data['environment']
+  rescue
+    return make_error_result(DEFAULT_EXITCODE, Errors::NoLastRunReport, "Puppet node response invalid")
+  end
+
+  # GET /puppet/v3/file_metadatas/pluginfacts?environment=<env>&links=follow&recurse=true&source_permissions=use&ignore=.svn&ignore=CVS&ignore=.git&ignore=.hg&checksum_type=md5
+  pluginfacts = session.get("/puppet/v3/file_metadatas/pluginfacts?environment=#{env}&links=follow&recurse=true&source_permissions=use&ignore=.svn&ignore=CVS&ignore=.git&ignore=.hg&checksum_type=md5")
+  if pluginfacts.code != '200'
+    return make_error_result(DEFAULT_EXITCODE, Errors::NoLastRunReport, "Puppet pluginfacts request failed")
+  end
+
+  # GET /puppet/v3/file_metadatas/plugins?environment=<env>&links=follow&recurse=true&source_permissions=ignore&ignore=.svn&ignore=CVS&ignore=.git&ignore=.hg&checksum_type=md5
+  pluginfacts = session.get("/puppet/v3/file_metadatas/plugins?environment=#{env}&links=follow&recurse=true&source_permissions=use&ignore=.svn&ignore=CVS&ignore=.git&ignore=.hg&checksum_type=md5")
+  if pluginfacts.code != '200'
+    return make_error_result(DEFAULT_EXITCODE, Errors::NoLastRunReport, "Puppet pluginfacts request failed")
+  end
+
+  facts = generate_facts(cert, config_path)
+  facts_body = "environment=#{env}&facts_format=pson&facts=#{URI.encode(facts.to_json)}&transaction_uuid=#{tx_uuid}&static_catalog=true&checksum_type=md5.sha256&fail_on_404=true"
+
+  # POST /puppet/v3/catalog/<cert>?environment=<env> body=facts
+  catalog_resp = session.post("/puppet/v3/catalog/#{cert}?environment=#{env}", facts_body)
+  if catalog_resp.code != '200'
+    return make_error_result(DEFAULT_EXITCODE, Errors::NoLastRunReport, "Puppet catalog request failed")
+  end
+
+  catalog = nil
+  begin
+    catalog = JSON.parse(catalog_resp.body)
+  rescue
+    return make_error_result(DEFAULT_EXITCODE, Errors::NoLastRunReport, "Puppet catalog response invalid")
+  end
+
+  # PUT /puppet/v3/report/<cert>?environment=<env> body=report
+  report = generate_report(cert, catalog['version'], tx_uuid, catalog['catalog_uuid'], catalog['code_id'], env)
+  report_resp = session.put("/puppet/v3/report/#{cert}?environment=#{env}", report.to_json, 'Content-Type' => 'text/pson')
+  if report_resp.code != '200'
+    return make_error_result(DEFAULT_EXITCODE, Errors::NoLastRunReport, "Puppet report failed")
+  end
+
+  result = last_run_result(0)
+  result['kind'] = 'apply'
+  result['time'] = Time.now
+  result['transaction_uuid'] = tx_uuid
+  result['environment'] = env
+  result['status'] = 'unchanged'
+  result
+end
+
+def action_run(input)
+  begin
+    args = JSON.parse(input)
+  rescue
+    return make_error_result(DEFAULT_EXITCODE, Errors::InvalidJson,
+                             "Invalid json received on STDIN: #{input}")
+  end
+  unless args.is_a?(Hash)
+    return make_error_result(DEFAULT_EXITCODE, Errors::InvalidJson,
+                             "The json received on STDIN was not a hash: #{args.to_s}")
+  end
+
+  output_files = args["output_files"]
+  if output_files
+    begin
+      $stdout.reopen(File.open(output_files["stdout"], 'w'))
+      $stderr.reopen(File.open(output_files["stderr"], 'w'))
+    rescue => e
+      print make_error_result(DEFAULT_EXITCODE, Errors::InvalidJson,
+                              "Could not open output files: #{e.message}").to_json
+      exit 5 # this exit code is reserved for problems with opening of the output_files
+    end
+
+    at_exit do
+      status = if $!.nil?
+        0
+      elsif $!.is_a?(SystemExit)
+        $!.status
+      else
+        1
+      end
+
+      # flush the stdout/stderr before writing the exitcode
+      # file to avoid pxp-agent reading incomplete output
+      $stdout.fsync
+      $stderr.fsync
+      begin
+        File.open(output_files["exitcode"], 'w') do |f|
+          f.puts(status)
+        end
+      rescue => e
+        print make_error_result(DEFAULT_EXITCODE, Errors::InvalidJson,
+                                "Could not open exit code file: #{e.message}").to_json
+        exit 5 # this exit code is reserved for problems with opening of the output_files
+      end
+    end
+  end
+
+  run()
+end
+
+if __FILE__ == $0
+  action = ARGV.shift || 'metadata'
+
+  if action == 'metadata'
+    puts metadata.to_json
+  else
+    action_results = action_run($stdin.read.chomp)
+    print action_results.to_json
+
+    unless action_results["error"].nil?
+      exit 1
+    end
+  end
+end

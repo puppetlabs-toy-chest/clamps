@@ -52,6 +52,7 @@ define clamps::users (
     "${config_path}/var/run",
     "${config_path}/opt",
     "${config_path}/opt/pxp-agent",
+    "${config_path}/opt/pxp-agent/modules",
     "${config_path}/opt/pxp-agent/spool",
     ]:
     ensure => directory,
@@ -91,7 +92,15 @@ define clamps::users (
     ensure  => file,
     owner   => $user,
     content => template('clamps/pxp-agent.conf.erb'),
-    require =>File["${config_path}/etc/pxp-agent/"],
+    require => File["${config_path}/etc/pxp-agent/"],
+  }
+
+  file { "${config_path}/opt/pxp-agent/modules/pxp-module-puppet":
+    ensure  => file,
+    owner   => $user,
+    mode    => '755',
+    content => template('clamps/pxp-module-puppet.erb'),
+    require => File["${config_path}/opt/pxp-agent/modules"],
   }
 
   if $run_pxp {
@@ -110,11 +119,11 @@ define clamps::users (
 
   $pxp_service_script = "${config_path}/bin/pxp-agent.init"
   file { "${pxp_service_script}":
-    ensure => file,
-    owner => $user,
-    mode => '755',
+    ensure  => file,
+    owner   => $user,
+    mode    => '755',
     content => template('clamps/pxp-agent.init.erb'),
-    require =>File["${config_path}/bin"],
+    require => File["${config_path}/bin"],
   }->
   service {"$user-pxp-agent":
     ensure    => $pxp_ensure,
@@ -122,17 +131,18 @@ define clamps::users (
     stop      => "${pxp_service_script} stop",
     restart   => "${pxp_service_script} restart",
     status    => "${pxp_service_script} status",
-    subscribe => File["${config_path}/etc/pxp-agent/pxp-agent.conf"],
+    subscribe => [File["${config_path}/etc/pxp-agent/pxp-agent.conf"],
+                  File["${config_path}/opt/pxp-agent/modules/pxp-module-puppet"]],
   }
 
   if $daemonize {
 
     exec { "user ${user} daemon puppet agent":
-      command => "/opt/puppetlabs/puppet/bin/puppet agent --daemonize >/dev/null 2>&1",
-      user => $user,
+      command     => "/opt/puppetlabs/puppet/bin/puppet agent --daemonize >/dev/null 2>&1",
+      user        => $user,
       environment => ["HOME=/home/${user}"],
-      path => "/bin:/usr/bin",
-      unless => "ps -o pid= -p `cat ${config_path}/var/run/agent.pid`",
+      path        => "/bin:/usr/bin",
+      unless      => "ps -o pid= -p `cat ${config_path}/var/run/agent.pid`",
     }
 
   } else {
