@@ -159,15 +159,21 @@ define clamps::users (
       $splayarg = ""
     }
 
+    if $clamps::agent::pxp_mock_puppet {
+      $puppet_run = "echo '{\"use_cached_catalog\": ${use_cached_catalog}}' | ${config_path}/opt/pxp-agent/modules/pxp-module-puppet run"
+    } else {
+      $puppet_run = "/opt/puppetlabs/puppet/bin/puppet agent --onetime --no-daemonize ${splayarg} ${splaylimitarg}"
+    }
+
     if $metrics_server {
       file { "/home/${user}/time-puppet-run.sh":
         ensure => file,
-        content => "TIMEFORMAT=\"metrics.${::fqdn}.${user}.time %R `date +%s`\"; TIME=$( { time /opt/puppetlabs/puppet/bin/puppet agent --onetime --no-daemonize ${splayarg} ${splaylimitarg} > /dev/null; } 2>&1 ); echo \$TIME | nc ${metrics_server} ${metrics_port}",
+        content => "TIMEFORMAT=\"metrics.${::fqdn}.${user}.time %R `date +%s`\"; TIME=$( { time ${puppet_run} > /dev/null; } 2>&1 ); echo \$TIME | nc ${metrics_server} ${metrics_port}",
       }
     }
 
     $cron_command = $metrics_server ? {
-      undef   => "/opt/puppetlabs/puppet/bin/puppet agent --onetime --no-daemonize ${splayarg} ${splaylimitarg}",
+      undef   => $puppet_run,
       default => "/home/${user}/time-puppet-run.sh",
     }
 
