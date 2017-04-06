@@ -18,6 +18,7 @@ class clamps::agent (
   $mco_daemon            = running,
   $pxp_ping_interval     = undef,
   $pxp_mock_puppet       = false,
+  $crond                 = 'running',
 ) {
 
   # Disable filebucket backups while managing clamps agents.
@@ -38,6 +39,12 @@ class clamps::agent (
   file { '/etc/puppetlabs/clamps/percent_facts':
     ensure  => file,
     content => "${percent_changed_facts}",
+  }
+
+  # Ensure crond is in the expected state, as we rely
+  # on it for agent runs.
+  service { 'crond':
+    ensure  => $crond,
   }
 
   $nonroot_usernames = clamps_users($nonroot_users)
