@@ -18,6 +18,12 @@ class clamps::agent (
   $pxp_ping_interval     = undef,
 ) {
 
+  # Disable filebucket backups while managing clamps agents.
+  # This has no affect on the agent runs themselves.
+  File {
+    backup => false
+  }
+
   file { '/etc/puppetlabs/clamps':
     ensure => directory
   }
