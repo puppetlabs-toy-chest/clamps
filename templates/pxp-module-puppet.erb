@@ -63,7 +63,7 @@ end
 
 def generate_facts(cert, config_path)
   id = '<%= @user %>'
-  facts = <%= @facts %>
+  facts = JSON.parse(File.read('<%= @facts_cache %>'))
   facts['id'] = id
   facts['gid'] = id
   facts['identity']['user'] = id

@@ -11,6 +11,7 @@ define clamps::users (
   $run_interval   = $clamps::agent::run_interval,
   $splay          = false,
   $splaylimit     = undef,
+  $facts_cache    = undef,
 ) {
 
   if $run_interval == 30 {

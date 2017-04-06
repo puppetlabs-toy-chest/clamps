@@ -41,6 +41,13 @@ class clamps::agent (
     content => "${percent_changed_facts}",
   }
 
+  # Write facts to a cache for clamps agents to use.
+  $facts_cache = '/etc/puppetlabs/clamps/facts_cache'
+  file { $facts_cache:
+    ensure  => file,
+    content => inline_template("<%= require 'json'; @facts.to_json %>"),
+  }
+
   # Ensure crond is in the expected state, as we rely
   # on it for agent runs.
   service { 'crond':
@@ -50,13 +57,14 @@ class clamps::agent (
   $nonroot_usernames = clamps_users($nonroot_users)
 
   ::clamps::users { $nonroot_usernames:
-    servername         => $master,
-    ca_server          => $ca,
-    metrics_server     => $metrics_server,
-    metrics_port       => $metrics_port,
-    daemonize          => $daemonize,
-    splay              => $splay,
-    splaylimit         => $splaylimit,
+    servername     => $master,
+    ca_server      => $ca,
+    metrics_server => $metrics_server,
+    metrics_port   => $metrics_port,
+    daemonize      => $daemonize,
+    splay          => $splay,
+    splaylimit     => $splaylimit,
+    facts_cache    => $facts_cache,
   }
 
   # This will not allow the "main" mcollective to start as
