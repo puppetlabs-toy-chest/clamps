@@ -2,6 +2,7 @@ define clamps::users (
   $user           = $title,
   $servername     = $servername,
   $ca_server      = $servername,
+  $agent_env      = $clamps::agent::environment,
   $metrics_server = undef,
   $metrics_port   = 2003,
   $daemonize      = false,

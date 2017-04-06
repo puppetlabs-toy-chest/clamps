@@ -62,368 +62,23 @@ def metadata()
 end
 
 def generate_facts(cert, config_path)
-  id = Etc.getlogin
-  fqdn = Socket.gethostname
-{"name"=>cert,
- "values"=>
-  {"aio_agent_build"=>"1.10.1",
-   "aio_agent_version"=>"1.10.1",
-   "architecture"=>"x86_64",
-   "augeas"=>{"version"=>"1.4.0"},
-   "augeasprovider_grub_version"=>2,
-   "augeasversion"=>"1.4.0",
-   "bios_release_date"=>"04/01/2014",
-   "bios_vendor"=>"SeaBIOS",
-   "bios_version"=>"1.9.1-5.el7",
-   "blockdevice_vda_size"=>34359738368,
-   "blockdevice_vda_vendor"=>"0x1af4",
-   "blockdevices"=>"vda",
-   "chassistype"=>"Other",
-   "collectd_version"=>"5.7.1",
-   "concat_basedir"=>"#{config_path}/.puppetlabs/opt/puppet/cache/concat",
-   "dhcp_servers"=>{"eth0"=>"192.168.0.1", "system"=>"192.168.0.1"},
-   "disks"=>
-    {"vda"=>
-      {"size"=>"32.00+GiB", "size_bytes"=>34359738368, "vendor"=>"0x1af4"}},
-   "dmi"=>
-    {"bios"=>
-      {"release_date"=>"04/01/2014",
-       "vendor"=>"SeaBIOS",
-       "version"=>"1.9.1-5.el7"},
-     "chassis"=>{"type"=>"Other"},
-     "manufacturer"=>"Fedora+Project",
-     "product"=>{"name"=>"OpenStack+Nova"}},
-   "domain"=>"rfc1918.puppetlabs.net",
-   "env_temp_variable"=>"\\tmp",
-   "facterversion"=>"3.6.3",
-   "filesystems"=>"xfs",
-   "fqdn"=>fqdn,
-   "gid"=>id,
-   "gnupg_command"=>"/bin/gpg",
-   "gnupg_installed"=>true,
-   "hardwareisa"=>"x86_64",
-   "hardwaremodel"=>"x86_64",
-   "hostname"=>"10-32-164-40",
-   "id"=>id,
-   "identity"=>
-    {"gid"=>1001,
-     "group"=>id,
-     "privileged"=>false,
-     "uid"=>1001,
-     "user"=>id},
-   "interfaces"=>"eth0,lo",
-   "ip6tables_version"=>"1.4.21",
-   "ipaddress"=>"192.168.0.124",
-   "ipaddress6"=>"fe80::f816:3eff:feda:97dc",
-   "ipaddress6_eth0"=>"fe80::f816:3eff:feda:97dc",
-   "ipaddress6_lo"=>"::1",
-   "ipaddress_eth0"=>"192.168.0.124",
-   "ipaddress_lo"=>"127.0.0.1",
-   "iptables_version"=>"1.4.21",
-   "is_pe"=>false,
-   "is_virtual"=>false,
-   "java_default_home"=>".",
-   "jenkins_plugins"=>"",
-   "kernel"=>"Linux",
-   "kernelmajversion"=>"3.10",
-   "kernelrelease"=>"3.10.0-327.el7.x86_64",
-   "kernelversion"=>"3.10.0",
-   "load_averages"=>{"15m"=>1.74, "1m"=>1.68, "5m"=>1.68},
-   "macaddress"=>"fa:16:3e:da:97:dc",
-   "macaddress_eth0"=>"fa:16:3e:da:97:dc",
-   "manufacturer"=>"Fedora+Project",
-   "mco_client_config"=>"/etc/puppetlabs/mcollective/client.cfg",
-   "mco_client_settings"=>
-    {"libdir"=>
-      "/opt/puppetlabs/mcollective/plugins:/usr/share/mcollective/plugins:/usr/libexec/mcollective"},
-   "mco_confdir"=>"#{config_path}/mcollective/etc",
-   "mco_server_config"=>"/etc/puppetlabs/mcollective/server.cfg",
-   "memory"=>
-    {"swap"=>
-      {"available"=>"3.44+GiB",
-       "available_bytes"=>3689095168,
-       "capacity"=>"7.12%",
-       "total"=>"3.70+GiB",
-       "total_bytes"=>3972001792,
-       "used"=>"269.80+MiB",
-       "used_bytes"=>282906624},
-     "system"=>
-      {"available"=>"1.72+GiB",
-       "available_bytes"=>1851215872,
-       "capacity"=>"53.43%",
-       "total"=>"3.70+GiB",
-       "total_bytes"=>3975233536,
-       "used"=>"1.98+GiB",
-       "used_bytes"=>2124017664}},
-   "memoryfree"=>"1.72+GiB",
-   "memoryfree_mb"=>1765.45703125,
-   "memorysize"=>"3.70+GiB",
-   "memorysize_mb"=>3791.078125,
-   "mountpoints"=>
-    {"/"=>
-      {"available"=>"16.00+GiB",
-       "available_bytes"=>17180925952,
-       "capacity"=>"49.98%",
-       "device"=>"/dev/vda1",
-       "filesystem"=>"xfs",
-       "options"=>
-        ["rw", "seclabel", "relatime", "attr2", "inode64", "noquota"],
-       "size"=>"31.99+GiB",
-       "size_bytes"=>34345459712,
-       "used"=>"15.99+GiB",
-       "used_bytes"=>17164533760},
-     "/dev/shm"=>
-      {"available"=>"1.85+GiB",
-       "available_bytes"=>1987616768,
-       "capacity"=>"0%",
-       "device"=>"tmpfs",
-       "filesystem"=>"tmpfs",
-       "options"=>["rw", "seclabel", "nosuid", "nodev"],
-       "size"=>"1.85+GiB",
-       "size_bytes"=>1987616768,
-       "used"=>"0+bytes",
-       "used_bytes"=>0},
-     "/run"=>
-      {"available"=>"1.82+GiB",
-       "available_bytes"=>1953505280,
-       "capacity"=>"1.72%",
-       "device"=>"tmpfs",
-       "filesystem"=>"tmpfs",
-       "options"=>["rw", "seclabel", "nosuid", "nodev", "mode=755"],
-       "size"=>"1.85+GiB",
-       "size_bytes"=>1987616768,
-       "used"=>"32.53+MiB",
-       "used_bytes"=>34111488},
-     "/sys/fs/cgroup"=>
-      {"available"=>"1.85+GiB",
-       "available_bytes"=>1987616768,
-       "capacity"=>"0%",
-       "device"=>"tmpfs",
-       "filesystem"=>"tmpfs",
-       "options"=>["ro", "seclabel", "nosuid", "nodev", "noexec", "mode=755"],
-       "size"=>"1.85+GiB",
-       "size_bytes"=>1987616768,
-       "used"=>"0+bytes",
-       "used_bytes"=>0}},
-   "mtu_eth0"=>1500,
-   "mtu_lo"=>65536,
-   "mysql_server_id"=>17155740,
-   "netmask"=>"255.255.255.0",
-   "netmask6"=>"ffff:ffff:ffff:ffff::",
-   "netmask6_eth0"=>"ffff:ffff:ffff:ffff::",
-   "netmask6_lo"=>"ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff",
-   "netmask_eth0"=>"255.255.255.0",
-   "netmask_lo"=>"255.0.0.0",
-   "network"=>"192.168.0.0",
-   "network6"=>"fe80::",
-   "network6_eth0"=>"fe80::",
-   "network6_lo"=>"::1",
-   "network_eth0"=>"192.168.0.0",
-   "network_lo"=>"127.0.0.0",
-   "networking"=>
-    {"dhcp"=>"192.168.0.1",
-     "domain"=>"rfc1918.puppetlabs.net",
-     "fqdn"=>fqdn,
-     "hostname"=>"10-32-164-40",
-     "interfaces"=>
-      {"eth0"=>
-        {"bindings"=>
-          [{"address"=>"192.168.0.124",
-            "netmask"=>"255.255.255.0",
-            "network"=>"192.168.0.0"}],
-         "bindings6"=>
-          [{"address"=>"fe80::f816:3eff:feda:97dc",
-            "netmask"=>"ffff:ffff:ffff:ffff::",
-            "network"=>"fe80::"}],
-         "dhcp"=>"192.168.0.1",
-         "ip"=>"192.168.0.124",
-         "ip6"=>"fe80::f816:3eff:feda:97dc",
-         "mac"=>"fa:16:3e:da:97:dc",
-         "mtu"=>1500,
-         "netmask"=>"255.255.255.0",
-         "netmask6"=>"ffff:ffff:ffff:ffff::",
-         "network"=>"192.168.0.0",
-         "network6"=>"fe80::"},
-       "lo"=>
-        {"bindings"=>
-          [{"address"=>"127.0.0.1",
-            "netmask"=>"255.0.0.0",
-            "network"=>"127.0.0.0"}],
-         "bindings6"=>
-          [{"address"=>"::1",
-            "netmask"=>"ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff",
-            "network"=>"::1"}],
-         "ip"=>"127.0.0.1",
-         "ip6"=>"::1",
-         "mtu"=>65536,
-         "netmask"=>"255.0.0.0",
-         "netmask6"=>"ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff",
-         "network"=>"127.0.0.0",
-         "network6"=>"::1"}},
-     "ip"=>"192.168.0.124",
-     "ip6"=>"fe80::f816:3eff:feda:97dc",
-     "mac"=>"fa:16:3e:da:97:dc",
-     "mtu"=>1500,
-     "netmask"=>"255.255.255.0",
-     "netmask6"=>"ffff:ffff:ffff:ffff::",
-     "network"=>"192.168.0.0",
-     "network6"=>"fe80::",
-     "primary"=>"eth0"},
-   "openssl_version"=>"1.0.1e-fips",
-   "operatingsystem"=>"CentOS",
-   "operatingsystemmajrelease"=>"7",
-   "operatingsystemrelease"=>"7.2.1511",
-   "os"=>
-    {"architecture"=>"x86_64",
-     "family"=>"RedHat",
-     "hardware"=>"x86_64",
-     "name"=>"CentOS",
-     "release"=>{"full"=>"7.2.1511", "major"=>"7", "minor"=>"2"},
-     "selinux"=>
-      {"config_mode"=>"enforcing",
-       "config_policy"=>"targeted",
-       "current_mode"=>"enforcing",
-       "enabled"=>true,
-       "enforced"=>true,
-       "policy_version"=>"28"}},
-   "osfamily"=>"RedHat",
-   "package_provider"=>"yum",
-   "partitions"=>
-    {"/dev/vda1"=>
-      {"mount"=>"/", "size"=>"32.00+GiB", "size_bytes"=>34355945984}},
-   "path"=>
-    "/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/puppetlabs/bin:/home/#{id}/.local/bin:/home/#{id}/bin:/sbin",
-   "pe_concat_basedir"=>"#{config_path}/opt/puppet/cache/pe_concat",
-   "pe_razor_server_version"=>"package+pe-razor-server+is+not+installed",
-   "physicalprocessorcount"=>4,
-   "platform_symlink_writable"=>false,
-   "platform_tag"=>"el-7-x86_64",
-   "processor0"=>"Intel(R)+Xeon(R)+CPU+E5-2680+v3+@+2.50GHz",
-   "processor1"=>"Intel(R)+Xeon(R)+CPU+E5-2680+v3+@+2.50GHz",
-   "processor2"=>"Intel(R)+Xeon(R)+CPU+E5-2680+v3+@+2.50GHz",
-   "processor3"=>"Intel(R)+Xeon(R)+CPU+E5-2680+v3+@+2.50GHz",
-   "processorcount"=>4,
-   "processors"=>
-    {"count"=>4,
-     "isa"=>"x86_64",
-     "models"=>
-      ["Intel(R)+Xeon(R)+CPU+E5-2680+v3+@+2.50GHz",
-       "Intel(R)+Xeon(R)+CPU+E5-2680+v3+@+2.50GHz",
-       "Intel(R)+Xeon(R)+CPU+E5-2680+v3+@+2.50GHz",
-       "Intel(R)+Xeon(R)+CPU+E5-2680+v3+@+2.50GHz"],
-     "physicalcount"=>4},
-   "productname"=>"OpenStack+Nova",
-   "puppet_agent_pid"=>10412,
-   "puppet_client_datadir"=>
-    "#{config_path}/.puppetlabs/opt/puppet/cache/client_data",
-   "puppet_confdir"=>"#{config_path}/.puppetlabs/etc/puppet",
-   "puppet_config"=>"#{config_path}/.puppetlabs/etc/puppet/puppet.conf",
-   "puppet_environmentpath"=>"#{config_path}/.puppetlabs/etc/code/environments",
-   "puppet_files_dir_present"=>false,
-   "puppet_inventory_metadata"=>
-    {"packages"=>
-      {"collection_enabled"=>false, "last_collection_time"=>"0.0s"}},
-   "puppet_master_server"=>"puppet",
-   "puppet_ssldir"=>"#{config_path}/.puppetlabs/etc/puppet/ssl",
-   "puppet_sslpaths"=>
-    {"privatedir"=>
-      {"path"=>"#{config_path}/.puppetlabs/etc/puppet/ssl/private",
-       "path_exists"=>true},
-     "privatekeydir"=>
-      {"path"=>"#{config_path}/.puppetlabs/etc/puppet/ssl/private_keys",
-       "path_exists"=>true},
-     "publickeydir"=>
-      {"path"=>"#{config_path}/.puppetlabs/etc/puppet/ssl/public_keys",
-       "path_exists"=>true},
-     "certdir"=>
-      {"path"=>"#{config_path}/.puppetlabs/etc/puppet/ssl/certs",
-       "path_exists"=>true},
-     "requestdir"=>
-      {"path"=>"#{config_path}/.puppetlabs/etc/puppet/ssl/certificate_requests",
-       "path_exists"=>true},
-     "hostcrl"=>
-      {"path"=>"#{config_path}/.puppetlabs/etc/puppet/ssl/crl.pem",
-       "path_exists"=>true}},
-   "puppet_stringify_facts"=>false,
-   "puppet_vardir"=>"#{config_path}/.puppetlabs/opt/puppet/cache",
-   "puppetversion"=>"4.10.0",
-   "python2_version"=>"2.7.5",
-   "python_version"=>"2.7.5",
-   "root_home"=>"/root",
-   "rsyslog_version"=>"7.4.7",
-   "ruby"=>
-    {"platform"=>"x86_64-linux",
-     "sitedir"=>"/opt/puppetlabs/puppet/lib/ruby/site_ruby/2.1.0",
-     "version"=>"2.1.9"},
-   "rubyplatform"=>"x86_64-linux",
-   "rubysitedir"=>"/opt/puppetlabs/puppet/lib/ruby/site_ruby/2.1.0",
-   "rubyversion"=>"2.1.9",
-   "selinux"=>true,
-   "selinux_config_mode"=>"enforcing",
-   "selinux_config_policy"=>"targeted",
-   "selinux_current_mode"=>"enforcing",
-   "selinux_enforced"=>true,
-   "selinux_policyversion"=>"28",
-   "service_provider"=>"systemd",
-   "ssh"=>
-    {"ecdsa"=>
-      {"fingerprints"=>
-        {"sha1"=>"SSHFP+3+1+196952365f72a3330c672c9930db7e290e4e7d18",
-         "sha256"=>
-          "SSHFP+3+2+3b984767dbf48ba0723bd93859d586a6ba5db9cd898bb4bf0d3d32a7e5362edb"},
-       "key"=>
-        "AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBCGSBnXq3RZvX32/Iili09RaEevCjNWCwpSv/aZsIAVPZBGEvvEld7dpYZXsdiXkYmKk7JI25gCHowA5Q8ozmYQ="},
-     "ed25519"=>
-      {"fingerprints"=>
-        {"sha1"=>"SSHFP+4+1+55cd4bdbec53af8e262f30166fe222115ef2d0fb",
-         "sha256"=>
-          "SSHFP+4+2+210160a0f61282d4a89ec3131186dd52afbb2cb33dc9b8d9dae2b503b92103d6"},
-       "key"=>
-        "AAAAC3NzaC1lZDI1NTE5AAAAIOVKHE90xS/aSY3th9KUBz9OS9+5g7XWz1w6OCX0AgOL"},
-     "rsa"=>
-      {"fingerprints"=>
-        {"sha1"=>"SSHFP+1+1+269852af5bb46dece79ddba3131c60803aed22ba",
-         "sha256"=>
-          "SSHFP+1+2+86e05902a60b17c9ed894ff5d7590f896f54f479fe87bbe6cfa12189b8869f46"},
-       "key"=>
-        "AAAAB3NzaC1yc2EAAAADAQABAAABAQC7XGTmtMa5WxyXbLAIfcAcqco1hK8ctmEt2RCK0zds8QKvf1ShlHEhx7fh0pI7xdWD4PnKEBRr2tybK1HCQITlopFTh7T5k3wHyulsUeVj6qN5tzRpdeBU3UiHvDD0O1dBdmq4rpDe0A3IOXihKAUetQgql+zd5bNstyNEuqQrP+yjUDdlBDojMZ1+wfUBroqhfXRf8SGh7x+qOZjaJTTseSzQzpMV6wNCH47y0qmlDCvu38oY9Wf6ztLnuWjWAO1tneFIviHIjoVkLxNb81tvTre9SB3qvlHYwKpJF7nbJlqn8frRZYpdAikXfdBXhJ6zqhpobqPVAAagSPViHmpx"}},
-   "sshecdsakey"=>
-    "AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBCGSBnXq3RZvX32/Iili09RaEevCjNWCwpSv/aZsIAVPZBGEvvEld7dpYZXsdiXkYmKk7JI25gCHowA5Q8ozmYQ=",
-   "sshed25519key"=>
-    "AAAAC3NzaC1lZDI1NTE5AAAAIOVKHE90xS/aSY3th9KUBz9OS9+5g7XWz1w6OCX0AgOL",
-   "sshfp_ecdsa"=>
-    "SSHFP+3+1+196952365f72a3330c672c9930db7e290e4e7d18\nSSHFP+3+2+3b984767dbf48ba0723bd93859d586a6ba5db9cd898bb4bf0d3d32a7e5362edb",
-   "sshfp_ed25519"=>
-    "SSHFP+4+1+55cd4bdbec53af8e262f30166fe222115ef2d0fb\nSSHFP+4+2+210160a0f61282d4a89ec3131186dd52afbb2cb33dc9b8d9dae2b503b92103d6",
-   "sshfp_rsa"=>
-    "SSHFP+1+1+269852af5bb46dece79ddba3131c60803aed22ba\nSSHFP+1+2+86e05902a60b17c9ed894ff5d7590f896f54f479fe87bbe6cfa12189b8869f46",
-   "sshrsakey"=>
-    "AAAAB3NzaC1yc2EAAAADAQABAAABAQC7XGTmtMa5WxyXbLAIfcAcqco1hK8ctmEt2RCK0zds8QKvf1ShlHEhx7fh0pI7xdWD4PnKEBRr2tybK1HCQITlopFTh7T5k3wHyulsUeVj6qN5tzRpdeBU3UiHvDD0O1dBdmq4rpDe0A3IOXihKAUetQgql+zd5bNstyNEuqQrP+yjUDdlBDojMZ1+wfUBroqhfXRf8SGh7x+qOZjaJTTseSzQzpMV6wNCH47y0qmlDCvu38oY9Wf6ztLnuWjWAO1tneFIviHIjoVkLxNb81tvTre9SB3qvlHYwKpJF7nbJlqn8frRZYpdAikXfdBXhJ6zqhpobqPVAAagSPViHmpx",
-   "staging_http_get"=>"curl",
-   "swapfile_sizes"=>{"/mnt/swap.1"=>"3878908"},
-   "swapfile_sizes_csv"=>"/mnt/swap.1||3878908",
-   "swapfree"=>"3.44+GiB",
-   "swapfree_mb"=>3518.1953125,
-   "swapsize"=>"3.70+GiB",
-   "swapsize_mb"=>3787.99609375,
-   "system_uptime"=>
-    {"days"=>0, "hours"=>1, "seconds"=>5403, "uptime"=>"1:30+hours"},
-   "timezone"=>"UTC",
-   "uptime"=>"1:30+hours",
-   "uptime_days"=>0,
-   "uptime_hours"=>1,
-   "uptime_seconds"=>5403,
-   "vcsrepo_svn_ver"=>"",
-   "virtual"=>"physical",
-   "clientcert"=>cert,
-   "clientversion"=>"4.10.0",
-   "clientnoop"=>false},
- "timestamp"=>Time.now,
- "expiration"=>Time.now+30*60}
+  id = '<%= @user %>'
+  facts = <%= @facts %>
+  facts['id'] = id
+  facts['gid'] = id
+  facts['identity']['user'] = id
+  facts['identity']['group'] = id
+  facts['clientcert'] = cert
+  # TODO: other facts are also wrong. Is it worth loading Facter?
+  {"name"=>cert,
+   "values"=>facts,
+   "timestamp"=>Time.now,
+   "expiration"=>Time.now+30*60}
 end
 
 def generate_report(cert, config_version, transaction_uuid, catalog_uuid, code_id, environment)
-  id = Etc.getlogin
+  # TODO: generate resource_statuses from report
+  id = '<%= @user %>'
 {"host"=>cert,
  "time"=>Time.now,
  "configuration_version"=>config_version,
@@ -439,56 +94,23 @@ def generate_report(cert, config_version, transaction_uuid, catalog_uuid, code_i
  "noop_pending"=>false,
  "environment"=>environment,
  "master_used"=>nil,
- "logs"=>
-  [{"level"=>"info",
-    "message"=>"Using configured environment '#{environment}'",
+ "logs"=>[
+   ['info', "Using configured environment '#{environment}'"],
+   ['info', 'Retrieving pluginfacts'],
+   ['info', 'Retrieving plugins'],
+   ['info', 'Loading facts'],
+   ['info', "Caching catalog for #{cert}"],
+   ['info', "Applying configuration version '#{config_version}'"],
+   ['notice', "Applied catalog in 0.30 seconds"]
+ ].map { |level, message|
+   {"level"=>level,
+    "message"=>message,
     "source"=>"Puppet",
-    "tags"=>["info"],
+    "tags"=>[level],
     "time"=>Time.now,
     "file"=>nil,
-    "line"=>nil},
-   {"level"=>"info",
-    "message"=>"Retrieving pluginfacts",
-    "source"=>"Puppet",
-    "tags"=>["info"],
-    "time"=>Time.now,
-    "file"=>nil,
-    "line"=>nil},
-   {"level"=>"info",
-    "message"=>"Retrieving plugin",
-    "source"=>"Puppet",
-    "tags"=>["info"],
-    "time"=>Time.now,
-    "file"=>nil,
-    "line"=>nil},
-   {"level"=>"info",
-    "message"=>"Loading facts",
-    "source"=>"Puppet",
-    "tags"=>["info"],
-    "time"=>Time.now,
-    "file"=>nil,
-    "line"=>nil},
-   {"level"=>"info",
-    "message"=>"Caching catalog for #{cert}",
-    "source"=>"Puppet",
-    "tags"=>["info"],
-    "time"=>Time.now,
-    "file"=>nil,
-    "line"=>nil},
-   {"level"=>"info",
-    "message"=>"Applying configuration version '#{config_version}'",
-    "source"=>"Puppet",
-    "tags"=>["info"],
-    "time"=>Time.now,
-    "file"=>nil,
-    "line"=>nil},
-   {"level"=>"notice",
-    "message"=>"Applied catalog in 0.30 seconds",
-    "source"=>"Puppet",
-    "tags"=>["notice"],
-    "time"=>Time.now,
-    "file"=>nil,
-    "line"=>nil}],
+    "line"=>nil}
+ },
  "metrics"=>
   {"resources"=>
     {"name"=>"resources",
@@ -793,7 +415,7 @@ def create_session(config_path, cert, host)
 end
 
 def run(use_cached_catalog)
-  env = '<%= scope['clamps::agent::environment'] %>'
+  env = '<%= @agent_env %>'
   host = '<%= @servername %>'
   cert = '<%= @agent_certname %>'
   config_path = '<%= @config_path %>'
