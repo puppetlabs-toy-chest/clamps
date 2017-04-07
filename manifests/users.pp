@@ -63,30 +63,40 @@ define clamps::users (
     owner  => $user,
   }
 
-  Ini_setting {
-    ensure  => 'present',
-    section => 'agent',
-    path    => "${config_path}/etc/puppet/puppet.conf",
-  }
+  if $pxp_mock_puppet and $run_pxp {
+    file { "${config_path}/opt/pxp-agent/modules/pxp-module-puppet":
+      ensure  => file,
+      owner   => $user,
+      mode    => '755',
+      content => template('clamps/pxp-module-puppet.erb'),
+      require => File["${config_path}/opt/pxp-agent/modules"],
+    }
+  } else {
+    Ini_setting {
+      ensure  => 'present',
+      section => 'agent',
+      path    => "${config_path}/etc/puppet/puppet.conf",
+    }
 
-  ini_setting { "${user}-certname":
-    setting => 'certname',
-    value   => $agent_certname,
-  }
+    ini_setting { "${user}-certname":
+      setting => 'certname',
+      value   => $agent_certname,
+    }
 
-  ini_setting { "${user}-servername":
-    setting => 'server',
-    value   => "$servername",
-  }
+    ini_setting { "${user}-servername":
+      setting => 'server',
+      value   => "$servername",
+    }
 
-  ini_setting { "${user}-ca_server":
-    setting => 'ca_server',
-    value   => $ca_server,
-  }
+    ini_setting { "${user}-ca_server":
+      setting => 'ca_server',
+      value   => $ca_server,
+    }
 
-  ini_setting { "${user}-use_cached_catalog":
-    setting => 'use_cached_catalog',
-    value   => "${use_cached_catalog}",
+    ini_setting { "${user}-use_cached_catalog":
+      setting => 'use_cached_catalog',
+      value   => "${use_cached_catalog}",
+    }
   }
 
   $pcp_v2_compatible = versioncmp($::puppetversion, '4.9.0') >= 0
@@ -99,20 +109,10 @@ define clamps::users (
     require => File["${config_path}/etc/pxp-agent/"],
   }
 
-  if $pxp_mock_puppet {
-    file { "${config_path}/opt/pxp-agent/modules/pxp-module-puppet":
-      ensure  => file,
-      owner   => $user,
-      mode    => '755',
-      content => template('clamps/pxp-module-puppet.erb'),
-      require => File["${config_path}/opt/pxp-agent/modules"],
-    }
-  }
-
   if $run_pxp {
     # there must be a safer way to do this
     exec { "user ${user} puppet agent cert":
-      command => "/opt/puppetlabs/puppet/bin/puppet agent -t --noop --waitforcert=10 >/dev/null 2>&1",
+      command => "/opt/puppetlabs/puppet/bin/puppet agent -t --certname ${agent_certname} --server ${servername} --ca_server ${ca_server} --noop --waitforcert=10 >/dev/null 2>&1",
       user => $user,
       environment => ["HOME=/home/${user}"],
       path => "/bin:/usr/bin",
