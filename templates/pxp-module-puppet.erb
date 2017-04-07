@@ -480,6 +480,10 @@ def run(use_cached_catalog)
     File.write(cache_path, catalog_resp.body)
   end
 
+<% if @pxp_mock_puppet.is_a?(Numeric) -%>
+  sleep <%= @pxp_mock_puppet %>
+
+<% end -%>
   # PUT /puppet/v3/report/<cert>?environment=<env> body=report
   report = generate_report(cert, catalog['version'], tx_uuid, catalog['catalog_uuid'], catalog['code_id'], env)
   report_resp = session.put("/puppet/v3/report/#{cert}?environment=#{env}", report.to_json, 'Content-Type' => 'text/pson')
