@@ -15,7 +15,7 @@ class clamps::agent (
   $run_interval          = 30,
   $splay                 = false,
   $splaylimit            = undef,
-  $mco_daemon            = running,
+  $mco_daemon            = undef,
   $pxp_ping_interval     = undef,
   $pxp_mock_puppet       = false,
   $crond                 = 'running',
@@ -43,9 +43,11 @@ class clamps::agent (
 
   # Write facts to a cache for clamps agents to use.
   $facts_cache = '/etc/puppetlabs/clamps/facts_cache'
-  file { $facts_cache:
-    ensure  => file,
-    content => inline_template("<%= require 'json'; @facts.to_json %>"),
+  if $pxp_mock_puppet {
+    file { $facts_cache:
+      ensure  => file,
+      content => inline_template("<%= require 'json'; @facts.to_json %>"),
+    }
   }
 
   # Ensure crond is in the expected state, as we rely
@@ -67,13 +69,15 @@ class clamps::agent (
     facts_cache    => $facts_cache,
   }
 
-  # This will not allow the "main" mcollective to start as
-  # it simply checks for a process named mcollective.
-  # The status override in the service resource makes the
-  # non-root nodes work though
-  ::clamps::mcollective { $nonroot_usernames:
-    amqservers => $amqserver,
-    amqpass    => $amqpass,
+  if $mco_daemon {
+    # This will not allow the "main" mcollective to start as
+    # it simply checks for a process named mcollective.
+    # The status override in the service resource makes the
+    # non-root nodes work though
+    ::clamps::mcollective { $nonroot_usernames:
+      amqservers => $amqserver,
+      amqpass    => $amqpass,
+    }
   }
 
   # Need to manage the ec2-user if you enabled this

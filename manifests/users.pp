@@ -97,12 +97,14 @@ define clamps::users (
     require => File["${config_path}/etc/pxp-agent/"],
   }
 
-  file { "${config_path}/opt/pxp-agent/modules/pxp-module-puppet":
-    ensure  => file,
-    owner   => $user,
-    mode    => '755',
-    content => template('clamps/pxp-module-puppet.erb'),
-    require => File["${config_path}/opt/pxp-agent/modules"],
+  if $clamps::agent::pxp_mock_puppet {
+    file { "${config_path}/opt/pxp-agent/modules/pxp-module-puppet":
+      ensure  => file,
+      owner   => $user,
+      mode    => '755',
+      content => template('clamps/pxp-module-puppet.erb'),
+      require => File["${config_path}/opt/pxp-agent/modules"],
+    }
   }
 
   if $run_pxp {
@@ -133,8 +135,7 @@ define clamps::users (
     stop      => "${pxp_service_script} stop",
     restart   => "${pxp_service_script} restart",
     status    => "${pxp_service_script} status",
-    subscribe => [File["${config_path}/etc/pxp-agent/pxp-agent.conf"],
-                  File["${config_path}/opt/pxp-agent/modules/pxp-module-puppet"]],
+    subscribe => File["${config_path}/etc/pxp-agent/pxp-agent.conf"],
   }
 
   if $daemonize {
@@ -149,21 +150,21 @@ define clamps::users (
 
   } else {
 
-    if $splaylimit {
-      $splaylimitarg = "--splaylimit ${splaylimit}"
-    } else {
-      $splaylimitarg = ""
-    }
-
-    if $splay or $splaylimit {
-      $splayarg = "--splay"
-    } else {
-      $splayarg = ""
-    }
-
     if $clamps::agent::pxp_mock_puppet {
       $puppet_run = "echo '{\"use_cached_catalog\": ${use_cached_catalog}}' | ${config_path}/opt/pxp-agent/modules/pxp-module-puppet run"
     } else {
+      if $splaylimit {
+        $splaylimitarg = "--splaylimit ${splaylimit}"
+      } else {
+        $splaylimitarg = ""
+      }
+
+      if $splay or $splaylimit {
+        $splayarg = "--splay"
+      } else {
+        $splayarg = ""
+      }
+
       $puppet_run = "/opt/puppetlabs/puppet/bin/puppet agent --onetime --no-daemonize ${splayarg} ${splaylimitarg}"
     }
 
