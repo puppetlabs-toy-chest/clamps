@@ -12,7 +12,7 @@
 <% if scope['clamps::agent::pxp_ping_interval'] -%>
   "ping-interval" : <%= scope['clamps::agent::pxp_ping_interval'] %>,
 <% end -%>
-<% if scope['clamps::agent::pxp_mock_puppet'] -%>
+<% if @pxp_mock_puppet -%>
   "modules-dir": "<%= @config_path %>/opt/pxp-agent/modules",
 <% end -%>
   "spool-dir" : "<%= @config_path %>/opt/pxp-agent/spool"

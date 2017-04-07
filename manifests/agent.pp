@@ -22,7 +22,7 @@ class clamps::agent (
 ) {
 
   # Disable filebucket backups while managing clamps agents.
-  # This has no affect on the agent runs themselves.
+  # This has no effect on the agent runs themselves.
   File {
     backup => false
   }

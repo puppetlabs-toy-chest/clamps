@@ -11,6 +11,7 @@ define clamps::users (
   $run_interval   = $clamps::agent::run_interval,
   $splay          = false,
   $splaylimit     = undef,
+  $pxp_mock_puppet = $clamps::agent::pxp_mock_puppet,
   $facts_cache    = undef,
 ) {
 
@@ -97,7 +98,7 @@ define clamps::users (
     require => File["${config_path}/etc/pxp-agent/"],
   }
 
-  if $clamps::agent::pxp_mock_puppet {
+  if $pxp_mock_puppet {
     file { "${config_path}/opt/pxp-agent/modules/pxp-module-puppet":
       ensure  => file,
       owner   => $user,
@@ -150,7 +151,7 @@ define clamps::users (
 
   } else {
 
-    if $clamps::agent::pxp_mock_puppet {
+    if $pxp_mock_puppet {
       $puppet_run = "echo '{\"use_cached_catalog\": ${use_cached_catalog}}' | ${config_path}/opt/pxp-agent/modules/pxp-module-puppet run"
     } else {
       if $splaylimit {
