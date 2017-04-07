@@ -1,13 +1,13 @@
-require 'facter'
 require 'erb'
 require 'fileutils'
 
-@facts = Facter.to_hash
+@module_helper = "#{File.expand_path(File.dirname(__FILE__))}/../files/pxp-module-helper.rb"
 @agent_env = 'production'
 @servername = 'foo'
 @user = 'user1'
-@agent_certname = "#{@user}-#{@facts['fqdn']}"
+@agent_certname = "#{@user}-foo"
 @config_path = File.join(ENV['HOME'], '.puppetlabs')
+@facts_cache = '/tmp/facts_cache'
 @pxp_mock_puppet = true
 
 FileUtils::mkdir_p("#{@config_path}/opt/pxp-agent/modules")

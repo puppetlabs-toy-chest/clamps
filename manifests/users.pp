@@ -13,6 +13,7 @@ define clamps::users (
   $splaylimit     = undef,
   $pxp_mock_puppet = $clamps::agent::pxp_mock_puppet,
   $facts_cache    = undef,
+  $module_helper  = undef,
 ) {
 
   if $run_interval == 30 {
