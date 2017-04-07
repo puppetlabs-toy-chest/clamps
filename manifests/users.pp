@@ -2,6 +2,7 @@ define clamps::users (
   $user           = $title,
   $servername     = $servername,
   $ca_server      = $servername,
+  $agent_env      = $clamps::agent::environment,
   $metrics_server = undef,
   $metrics_port   = 2003,
   $daemonize      = false,
@@ -10,6 +11,7 @@ define clamps::users (
   $run_interval   = $clamps::agent::run_interval,
   $splay          = false,
   $splaylimit     = undef,
+  $facts_cache    = undef,
 ) {
 
   if $run_interval == 30 {
@@ -52,6 +54,7 @@ define clamps::users (
     "${config_path}/var/run",
     "${config_path}/opt",
     "${config_path}/opt/pxp-agent",
+    "${config_path}/opt/pxp-agent/modules",
     "${config_path}/opt/pxp-agent/spool",
     ]:
     ensure => directory,
@@ -91,7 +94,17 @@ define clamps::users (
     ensure  => file,
     owner   => $user,
     content => template('clamps/pxp-agent.conf.erb'),
-    require =>File["${config_path}/etc/pxp-agent/"],
+    require => File["${config_path}/etc/pxp-agent/"],
+  }
+
+  if $clamps::agent::pxp_mock_puppet {
+    file { "${config_path}/opt/pxp-agent/modules/pxp-module-puppet":
+      ensure  => file,
+      owner   => $user,
+      mode    => '755',
+      content => template('clamps/pxp-module-puppet.erb'),
+      require => File["${config_path}/opt/pxp-agent/modules"],
+    }
   }
 
   if $run_pxp {
@@ -110,11 +123,11 @@ define clamps::users (
 
   $pxp_service_script = "${config_path}/bin/pxp-agent.init"
   file { "${pxp_service_script}":
-    ensure => file,
-    owner => $user,
-    mode => '755',
+    ensure  => file,
+    owner   => $user,
+    mode    => '755',
     content => template('clamps/pxp-agent.init.erb'),
-    require =>File["${config_path}/bin"],
+    require => File["${config_path}/bin"],
   }->
   service {"$user-pxp-agent":
     ensure    => $pxp_ensure,
@@ -128,36 +141,42 @@ define clamps::users (
   if $daemonize {
 
     exec { "user ${user} daemon puppet agent":
-      command => "/opt/puppetlabs/puppet/bin/puppet agent --daemonize >/dev/null 2>&1",
-      user => $user,
+      command     => "/opt/puppetlabs/puppet/bin/puppet agent --daemonize >/dev/null 2>&1",
+      user        => $user,
       environment => ["HOME=/home/${user}"],
-      path => "/bin:/usr/bin",
-      unless => "ps -o pid= -p `cat ${config_path}/var/run/agent.pid`",
+      path        => "/bin:/usr/bin",
+      unless      => "ps -o pid= -p `cat ${config_path}/var/run/agent.pid`",
     }
 
   } else {
 
-    if $splaylimit {
-      $splaylimitarg = "--splaylimit ${splaylimit}"
+    if $clamps::agent::pxp_mock_puppet {
+      $puppet_run = "echo '{\"use_cached_catalog\": ${use_cached_catalog}}' | ${config_path}/opt/pxp-agent/modules/pxp-module-puppet run"
     } else {
-      $splaylimitarg = ""
-    }
+      if $splaylimit {
+        $splaylimitarg = "--splaylimit ${splaylimit}"
+      } else {
+        $splaylimitarg = ""
+      }
 
-    if $splay or $splaylimit {
-      $splayarg = "--splay"
-    } else {
-      $splayarg = ""
+      if $splay or $splaylimit {
+        $splayarg = "--splay"
+      } else {
+        $splayarg = ""
+      }
+
+      $puppet_run = "/opt/puppetlabs/puppet/bin/puppet agent --onetime --no-daemonize ${splayarg} ${splaylimitarg}"
     }
 
     if $metrics_server {
       file { "/home/${user}/time-puppet-run.sh":
         ensure => file,
-        content => "TIMEFORMAT=\"metrics.${::fqdn}.${user}.time %R `date +%s`\"; TIME=$( { time /opt/puppetlabs/puppet/bin/puppet agent --onetime --no-daemonize ${splayarg} ${splaylimitarg} > /dev/null; } 2>&1 ); echo \$TIME | nc ${metrics_server} ${metrics_port}",
+        content => "TIMEFORMAT=\"metrics.${::fqdn}.${user}.time %R `date +%s`\"; TIME=$( { time ${puppet_run} > /dev/null; } 2>&1 ); echo \$TIME | nc ${metrics_server} ${metrics_port}",
       }
     }
 
     $cron_command = $metrics_server ? {
-      undef   => "/opt/puppetlabs/puppet/bin/puppet agent --onetime --no-daemonize ${splayarg} ${splaylimitarg}",
+      undef   => $puppet_run,
       default => "/home/${user}/time-puppet-run.sh",
     }
 
