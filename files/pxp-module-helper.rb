@@ -432,8 +432,8 @@ end
 def create_session(config_path, cert, host)
   session = Net::HTTP.new(host, 8140)
 
+  session.ca_file = '/etc/puppetlabs/puppet/ssl/certs/ca.pem'
   ssl_path = File.join(config_path, 'etc', 'puppet', 'ssl')
-  session.ca_file = File.join(ssl_path, 'certs', 'ca.pem')
   cert_path = File.join(ssl_path, 'certs', "#{cert}.pem")
   session.cert = OpenSSL::X509::Certificate.new(File.read(cert_path, :encoding => Encoding::ASCII))
   key_path = File.join(ssl_path, 'private_keys', "#{cert}.pem")

@@ -50,6 +50,10 @@ define clamps::users (
     "${config_path}/bin",
     "${config_path}/etc",
     "${config_path}/etc/puppet",
+    "${config_path}/etc/puppet/ssl",
+    "${config_path}/etc/puppet/ssl/certs",
+    "${config_path}/etc/puppet/ssl/private_keys",
+    "${config_path}/etc/puppet/ssl/certificate_requests",
     "${config_path}/etc/pxp-agent",
     "${config_path}/var",
     "${config_path}/var/log",
@@ -61,6 +65,7 @@ define clamps::users (
     ]:
     ensure => directory,
     owner  => $user,
+    group  => $user,
   }
 
   if $pxp_mock_puppet and $run_pxp {
@@ -110,13 +115,18 @@ define clamps::users (
   }
 
   if $run_pxp {
-    # there must be a safer way to do this
+    # no need to copy cacert, as pxp-agent uses the one below
+    $ssl_path = "${config_path}/etc/puppet/ssl"
+    $cacert = '/etc/puppetlabs/puppet/ssl/certs/ca.pem'
     exec { "user ${user} puppet agent cert":
-      command => "/opt/puppetlabs/puppet/bin/puppet agent -t --certname ${agent_certname} --server ${servername} --ca_server ${ca_server} --noop --waitforcert=10 >/dev/null 2>&1",
+      command => "openssl genrsa -out ${ssl_path}/private_keys/${agent_certname}.pem 4096 && \
+                  openssl req -new -sha256 -key ${ssl_path}/private_keys/${agent_certname}.pem -out ${ssl_path}/certificate_requests/${agent_certname}.pem -subj '/CN=${agent_certname}' && \
+                  curl --cacert ${cacert} -X PUT https://${ca_server}:8140/puppet-ca/v1/certificate_request/${agent_certname} -H Content-Type:text/plain --data-binary '@${ssl_path}/certificate_requests/${agent_certname}.pem' && \
+                  curl --cacert ${cacert} -X GET https://${ca_server}:8140/puppet-ca/v1/certificate/${agent_certname} -o ${ssl_path}/certs/${agent_certname}.pem",
       user => $user,
       environment => ["HOME=/home/${user}"],
-      path => "/bin:/usr/bin",
-      creates => "${config_path}/etc/puppet/ssl/certs/${agent_certname}.pem",
+      path => "/opt/puppetlabs/puppet/bin:/bin:/usr/bin",
+      creates => "${ssl_path}/certs/${agent_certname}.pem",
     }
     $pxp_ensure="running"
   } else {
