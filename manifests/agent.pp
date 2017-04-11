@@ -43,10 +43,16 @@ class clamps::agent (
 
   # Write facts to a cache for clamps agents to use.
   $facts_cache = '/etc/puppetlabs/clamps/facts_cache'
+  $module_helper = '/etc/puppetlabs/clamps/pxp-module-helper.rb'
   if $pxp_mock_puppet {
     file { $facts_cache:
       ensure  => file,
       content => inline_template("<%= require 'json'; @facts.to_json %>"),
+    }
+
+    file { $module_helper:
+      ensure => file,
+      source => 'puppet:///modules/clamps/pxp-module-helper.rb',
     }
   }
 
@@ -67,6 +73,7 @@ class clamps::agent (
     splay          => $splay,
     splaylimit     => $splaylimit,
     facts_cache    => $facts_cache,
+    module_helper  => $module_helper,
   }
 
   if $mco_daemon {
