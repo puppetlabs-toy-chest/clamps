@@ -465,7 +465,7 @@ def run(use_cached_catalog, env, host, cert, config_path, id, facts_cache, sleep
     # GET /puppet/v3/node/<cert>?environment=<env>&transaction_uuid=<uuid>&fail_on_404=true
     node_resp = session.get("/puppet/v3/node/#{cert}?environment=#{env}&transaction_uuid=#{tx_uuid}&fail_on_404=true")
     if node_resp.code != '200'
-      return make_error_result(DEFAULT_EXITCODE, Errors::NoLastRunReport, "Puppet node request failed")
+      return make_error_result(DEFAULT_EXITCODE, Errors::NoLastRunReport, "Puppet node request failed\n#{node_resp.body}")
     end
 
     begin
@@ -473,19 +473,19 @@ def run(use_cached_catalog, env, host, cert, config_path, id, facts_cache, sleep
       # Use environment from node response
       env = node_data['environment']
     rescue
-      return make_error_result(DEFAULT_EXITCODE, Errors::NoLastRunReport, "Puppet node response invalid")
+      return make_error_result(DEFAULT_EXITCODE, Errors::NoLastRunReport, "Puppet node response invalid\n#{node_resp.body}")
     end
 
     # GET /puppet/v3/file_metadatas/pluginfacts?environment=<env>&links=follow&recurse=true&source_permissions=use&ignore=.svn&ignore=CVS&ignore=.git&ignore=.hg&checksum_type=md5
     pluginfacts = session.get("/puppet/v3/file_metadatas/pluginfacts?environment=#{env}&links=follow&recurse=true&source_permissions=use&ignore=.svn&ignore=CVS&ignore=.git&ignore=.hg&checksum_type=md5")
     if pluginfacts.code != '200'
-      return make_error_result(DEFAULT_EXITCODE, Errors::NoLastRunReport, "Puppet pluginfacts request failed")
+      return make_error_result(DEFAULT_EXITCODE, Errors::NoLastRunReport, "Puppet pluginfacts request failed\n#{pluginfacts.body}")
     end
 
     # GET /puppet/v3/file_metadatas/plugins?environment=<env>&links=follow&recurse=true&source_permissions=ignore&ignore=.svn&ignore=CVS&ignore=.git&ignore=.hg&checksum_type=md5
     pluginfacts = session.get("/puppet/v3/file_metadatas/plugins?environment=#{env}&links=follow&recurse=true&source_permissions=use&ignore=.svn&ignore=CVS&ignore=.git&ignore=.hg&checksum_type=md5")
     if pluginfacts.code != '200'
-      return make_error_result(DEFAULT_EXITCODE, Errors::NoLastRunReport, "Puppet pluginfacts request failed")
+      return make_error_result(DEFAULT_EXITCODE, Errors::NoLastRunReport, "Puppet pluginfacts request failed\n#{pluginfacts.body}")
     end
 
     facts = generate_facts(facts_cache, cert, config_path, id)
@@ -494,13 +494,13 @@ def run(use_cached_catalog, env, host, cert, config_path, id, facts_cache, sleep
     # POST /puppet/v3/catalog/<cert>?environment=<env> body=facts
     catalog_resp = session.post("/puppet/v3/catalog/#{cert}?environment=#{env}", facts_body)
     if catalog_resp.code != '200'
-      return make_error_result(DEFAULT_EXITCODE, Errors::NoLastRunReport, "Puppet catalog request failed")
+      return make_error_result(DEFAULT_EXITCODE, Errors::NoLastRunReport, "Puppet catalog request failed\n#{catalog_resp.body}")
     end
 
     begin
       catalog = JSON.parse(catalog_resp.body)
     rescue
-      return make_error_result(DEFAULT_EXITCODE, Errors::NoLastRunReport, "Puppet catalog response invalid")
+      return make_error_result(DEFAULT_EXITCODE, Errors::NoLastRunReport, "Puppet catalog response invalid\n#{catalog_resp.body}")
     end
 
     # Cache catalog
@@ -513,7 +513,7 @@ def run(use_cached_catalog, env, host, cert, config_path, id, facts_cache, sleep
   report = generate_report(cert, catalog['version'], tx_uuid, catalog['catalog_uuid'], catalog['code_id'], env, id)
   report_resp = session.put("/puppet/v3/report/#{cert}?environment=#{env}", report.to_json, 'Content-Type' => 'text/pson')
   if report_resp.code != '200'
-    return make_error_result(DEFAULT_EXITCODE, Errors::NoLastRunReport, "Puppet report failed")
+    return make_error_result(DEFAULT_EXITCODE, Errors::NoLastRunReport, "Puppet report failed\n#{report_resp.body}")
   end
 
   result = last_run_result(0)
