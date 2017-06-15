@@ -77,6 +77,35 @@ class clamps::agent (
     module_helper  => $module_helper,
   }
 
+  package {'psmisc':
+    ensure => present,
+  }
+
+  $pxp_agent_cron = @("EOT")
+    /home/*/.puppetlabs/var/log/pxp-agent.log {
+      daily
+      missingok
+      rotate 30
+      compress
+      notifempty
+      sharedscripts
+      postrotate
+        /usr/bin/killall -USR2 pxp-agent
+      endscript
+    }
+  | EOT
+
+  file { "/etc/puppetlabs/clamps/logrotate.conf":
+    ensure  => file,
+    content => $pxp_agent_cron,
+  }
+
+  cron { "cron.pxp-agent.${user}":
+    command => 'logrotate /etc/puppetlabs/clamps/logrotate.conf',
+    hour    => '0',
+    require => File['/etc/puppetlabs/clamps/logrotate.conf'],
+  }
+
   if $mco_daemon {
     # This will not allow the "main" mcollective to start as
     # it simply checks for a process named mcollective.
