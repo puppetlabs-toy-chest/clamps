@@ -18,6 +18,7 @@ class clamps::agent (
   $mco_daemon            = undef,
   $pxp_ping_interval     = undef,
   $pxp_mock_puppet       = false,
+  $pxp_log_level         = 'debug',
   $crond                 = 'running',
 ) {
 
