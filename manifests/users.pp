@@ -61,6 +61,7 @@ define clamps::users (
     "${config_path}/opt",
     "${config_path}/opt/pxp-agent",
     "${config_path}/opt/pxp-agent/modules",
+    "${config_path}/opt/pxp-agent/tasks-cache",
     "${config_path}/opt/pxp-agent/spool",
     ]:
     ensure => directory,
@@ -106,6 +107,7 @@ define clamps::users (
 
   $pcp_v2_compatible = versioncmp($::puppetversion, '4.9.0') >= 0
   $pcp_endpoint = if $pcp_v2_compatible { 'pcp2' } else { 'pcp' }
+  $pxp_task_compatible = versioncmp($::aio_agent_version, '5.2.0') >= 0 or $::aio_agent_version !~ /^\d+\.\d+\.\d+$/
 
   file { "${config_path}/etc/pxp-agent/pxp-agent.conf":
     ensure  => file,

@@ -15,5 +15,9 @@
 <% if @pxp_mock_puppet -%>
   "modules-dir": "<%= @config_path %>/opt/pxp-agent/modules",
 <% end -%>
+<% if @pxp_task_compatible -%>
+  "task-cache-dir": "<%= @config_path %>/opt/pxp-agent/tasks-cache",
+  "master-uris": ["<%= @servername %>"],
+<% end -%>
   "spool-dir" : "<%= @config_path %>/opt/pxp-agent/spool"
 }
