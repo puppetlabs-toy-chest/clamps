@@ -46,8 +46,9 @@ class clamps::agent (
   $module_helper = '/etc/puppetlabs/clamps/pxp-module-helper.rb'
   if $pxp_mock_puppet {
     file { $facts_cache:
-      ensure  => file,
-      content => inline_template("<%= require 'json'; @facts.to_json %>"),
+      ensure    => file,
+      content   => inline_template("<%= require 'json'; @facts.to_json %>"),
+      show_diff => false,
     }
 
     file { $module_helper:
