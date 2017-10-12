@@ -62,6 +62,7 @@ define clamps::users (
     "${config_path}/opt/pxp-agent",
     "${config_path}/opt/pxp-agent/modules",
     "${config_path}/opt/pxp-agent/spool",
+    "${config_path}/opt/pxp-agent/tasks-cache",
     ]:
     ensure => directory,
     owner  => $user,
