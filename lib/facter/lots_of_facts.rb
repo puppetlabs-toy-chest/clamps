@@ -52,19 +52,19 @@
 
 require "facter"
 
-# Number of facts to be generated, via the CLAMPS configuration (default: 500).
+# Number of facts to be generated, via the CLAMPS configuration (default: 0).
 def number_of_facts
   @number_of_facts ||=
     File.exist?("/etc/puppetlabs/clamps/num_facts") ?
-      File.read("/etc/puppetlabs/clamps/num_facts").to_i : 500
+      File.read("/etc/puppetlabs/clamps/num_facts").to_i : 0
 end
 
 # Percentage of facts that should have changing values on each run, via the
-# CLAMPS configuration (default: 15).
+# CLAMPS configuration (default: 0).
 def percent_to_change
   @percent_to_change ||=
     File.exist?("/etc/puppetlabs/clamps/percent_facts") ?
-      File.read("/etc/puppetlabs/clamps/percent_facts").to_i : 15
+      File.read("/etc/puppetlabs/clamps/percent_facts").to_i : 0
 end
 
 # Returns a Hash with `#number_of_facts` entries: keys are fact names, of the
