@@ -94,8 +94,8 @@ This class accepts the following parameters:
  - `$percent_changed_facts` (`Integer`): What percentage (0-100) of facts will have new values on each run?
  - `$use_cached_catalog` ('Boolean'): Agents use cached catalogs, i.e. avoid node request, submitting facts and compiling catalog. (default: `false`)
  - `$run_interval` (`Integer`): Interval for agent runs via cron. (default: `30`)
- - `$splay` (`Boolean`):  Enable `--splay` for non-user agent runs? (default: `false`).  See [Configuration: splay](https://docs.puppetlabs.com/references/latest/configuration.html#splay) for puppet agent semantics.
- - `$splaylimit` (`String`): Set the `--splaylimit` parameter for non-user agent runs? (default: unset). Implies `splay`.  See [Configuration: splaylimit](https://docs.puppetlabs.com/references/latest/configuration.html#splaylimit) for puppet agent semantics.
+ - `$splay` (`Boolean`):  Enable `--splay` for non-user agent runs? (default: `false`).  See [Configuration: splay](https://puppet.com/docs/puppet/latest/configuration.html#splay) for puppet agent semantics.
+ - `$splaylimit` (`String`): Set the `--splaylimit` parameter for non-user agent runs? (default: unset). Implies `splay`.  See [Configuration: splaylimit](https://puppet.com/docs/puppet/latest/configuration.html#splaylimit) for puppet agent semantics.
  - `$mco_daemon` (`String`): If undefined, mcollective is not managed. Otherwise should be `running` or `stopped` to enforce state of mcollective daemon. (default: unset)
  - `$pxp_ping_interval` (`Integer`): Ping interval for pxp-agent. (default: unset)
  - `$pxp_mock_puppet` (`Boolean`, `Number`): If truthy, use a mock puppet agent for cron runs and pxp-agent. If a number, uses that as a sleep period before sending the report to simulate agent activity. Negated when `$daemonize` is `true`. (default: `false`)
