@@ -1,5 +1,5 @@
 class clamps::agent (
-  $amqpass               = file('/etc/puppetlabs/mcollective/credentials'),
+  $amqpass               = undef,
   $amqserver             = [$::servername],
   $ca                    = $::settings::ca_server,
   $daemonize             = false,
