@@ -5,7 +5,7 @@
   "ssl-cert" : "<%= @config_path %>/etc/puppet/ssl/certs/<%= @agent_certname %>.pem",
   "pidfile" : "<%= @config_path %>/var/run/pxp-agent.pid",
   "logfile" : "<%= @config_path %>/var/log/pxp-agent.log",
-  "loglevel" : "debug",
+  "loglevel" : "<%= scope['clamps::agent::pxp_log_level'] %>",
 <% if @pcp_v2_compatible -%>
   "pcp-version": "2",
 <% end -%>
